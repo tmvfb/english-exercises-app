@@ -1,0 +1,50 @@
+@import url('https://fonts.googleapis.com/css2?family=Raleway:wght@500&display=swap');
+
+body {
+  padding-top: 5rem;
+  font-family: 'Raleway', sans-serif;
+}
+[data-bs-theme=light] body {
+  background: radial-gradient(circle, hsla(0, 0%, 100%, 1) 67%, hsla(0, 0%, 97%, 1) 100%);
+}
+[data-bs-theme=dark] body {
+  color: var(--bs-secondary-text-emphasis);
+  background-color: var(--bs-secondary-bg-subtle);
+}
+[data-bs-theme=dark] .table-light {
+  background-color: var(--bs-light-bg-subtle);
+  color: var(--bs-light-subtle);
+}
+[data-bs-theme=dark] .card-header {
+  background-color: var(--bs-light-bg) !important;
+  text-color: #4287f5;
+}
+[data-bs-theme=dark] .card-body {
+  background-color: var(--bs-light-bg-subtle) !important;
+}
+[data-bs-theme=dark] .btn-outline-success {
+  --bs-btn-border-color: #6c757d;
+  --bs-btn-color: #8bb9fe;
+  --bs-btn-hover-bg: #8bb9fe;
+}
+[data-bs-theme=dark] .btn-success {
+  --bs-btn-border-color: #6c757d;
+  --bs-btn-color: var(--bs-light-bg-subtle);
+  --bs-btn-bg: #8bb9fe;
+  --bs-btn-hover-bg: #8bb9fe;
+}
+[data-bs-theme=dark] .alert-success {
+  --bs-alert-bg: #8bb9fe;
+  --bs-alert-color: #f0f0f0;
+  --bs-alert-border-color: #6da6fb;
+}
+.btn-link {
+  text-decoration: none !important;
+}
+.starter-template {
+  padding: 3rem 1.5rem;
+  text-align: center;
+}
+.invert-image {
+  filter: invert(100%);
+}

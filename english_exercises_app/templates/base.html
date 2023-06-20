@@ -1,0 +1,160 @@
+<!doctype html>
+
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+{% get_available_languages as LANGUAGES %}
+{% get_language_info_list for LANGUAGES as languages %}
+{% load django_bootstrap5 %}
+{% bootstrap_javascript %}
+{% load static %}
+
+<html lang="{{ language.code }}">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="keywords" content="english, language, exercises">
+    <meta name="description" content={% translate "Practice English with your favourite texts" %}>
+
+    <!-- Theme toggler logic -->
+    <script>
+      var htmlElement = document.getElementsByTagName("html")[0];
+      var currentTheme = localStorage.getItem("theme");
+
+      if (!currentTheme) {
+	currentTheme = "light";
+      }
+
+      htmlElement.setAttribute("data-bs-theme", currentTheme);
+    </script>
+    <script type="module" src="{% static 'theme_toggle.js' %}"></script>
+
+    <title>{% translate 'Exerciser' %}</title>
+
+    <link rel="canonical" href="https://getbootstrap.com/docs/5.0/examples/starter-template/">
+
+    <!-- Bootstrap core CSS -->
+    <link href="{% static "bootstrap.min.css" %}" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="{% static "styles.css" %}" rel="stylesheet">
+  </head>
+
+  <body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+      <div class="container-fluid">
+	<a class="navbar-brand" href="{% url 'home' %}">
+	  <img src="https://upload.wikimedia.org/wikipedia/commons/6/68/Font_Awesome_5_solid_tasks.svg" alt="Tasks icon" width="22" height="22" class="invert-image mb-1">
+	  {% translate 'Exerciser' %}
+	</a>
+	<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+	  <span class="navbar-toggler-icon"></span>
+	</button>
+
+	<div class="collapse navbar-collapse" id="navbarsExampleDefault">
+	  <ul class="navbar-nav me-auto mt-2 mt-lg-0">
+	    <li class="nav-item">
+	      <a class="nav-link" href="{% url 'home' %}">{% translate 'Users' %}</a>
+	    </li>
+	    {% if request.user.is_authenticated %}
+	    <li class="nav-item">
+	      <a class="nav-link" href="{% url 'home' %}">{% translate 'Statuses' %}</a>
+	    </li>
+	    {% endif %}
+	  </ul>
+
+	  {% if request.user.is_authenticated %}
+	  <form action="{% url 'home' %}" method="get" class="d-flex ms-lg-2 my-1">
+	    <input name="q" class="form-control me-sm-2" type="text" placeholder="{% translate 'Search' %}" aria-label="Search" value="{{ request.GET.q }}">
+	    <button class="btn btn-outline-success ms-1" type="submit">{% translate 'Search' %}</button>
+	  </form>
+	  {% endif %}
+
+	  <ul class="navbar-nav mr-0 ms-4">
+
+	    <!-- Dropdown menu with languages -->
+	    <li class="nav-item dropdown">
+	      <a class="nav-link dropdown-toggle" href="" id="dropdown01" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-bs-toggle="dropdown">
+		{% translate 'Language' %}
+	      </a>
+	      <div class="dropdown-menu" aria-labelledby="dropdown01">
+		<form action="{% url 'home' %}" method="post" class="form-inline">
+		  {% csrf_token %}
+		  <input name="next" type="hidden" value="{{ redirect_to }}">
+		    {% for language in languages %}
+		  <button name="language" value="{{ language.code }}" type="submit" class="mx-auto dropdown-item">{{ language.name_local }} ({{ language.code }})</button>
+		  {% endfor %}
+		</form>
+	      </div>
+	    </li>
+
+	    {% if not request.user.is_authenticated %}
+	    <li class="nav-item">
+	      <a class="nav-link" href="{% url 'home' %}">{% translate 'Login' %}</a>
+	    </li>
+	    <li class="nav-item">
+	      <a class="nav-link" href="{% url 'home' %}">{% translate 'Sign up' %}</a>
+	    </li>
+	    {% endif %}
+	    {% if request.user.is_authenticated %}
+	    <li class="nav-item">
+	      <a class="nav-link" href="{% url 'home' %}">{% translate 'Logout' %}</a>
+	    </li>
+	    {% endif %}
+
+	    <!-- Dark/light theme toggler -->
+	    <li class="nav-item mt-2 ms-1">
+	      <div class="form-check form-switch ">
+		<input class="form-check-input" type="checkbox" id="themeButton"</input>
+		<label class="form-check-label" for="themeButton">
+		  <svg transform="rotate(180)" enable-background="new 0 0 30 30" height="22px" id="square_icons" version="1.1" viewBox="0 0 30 30" width="22px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="invert-image"><path clip-rule="evenodd" d="M15,0.1C6.8,0.1,0.1,6.8,0.1,15c0,8.2,6.7,14.9,14.9,14.9  S29.9,23.2,29.9,15C29.9,6.8,23.2,0.1,15,0.1z M15,26.9C8.4,26.9,3.1,21.6,3.1,15C3.1,8.4,8.4,3.1,15,3.1c6.6,0,11.9,5.3,11.9,11.9  C26.9,21.6,21.6,26.9,15,26.9z M16,6.1c0,9.5,0,8.6,0,17.9c3.2,0,8-4,8-8.9C23.9,10.1,19.9,6.1,16,6.1z" fill="#211A16" fill-rule="evenodd"/></svg>
+		</label>
+	      </div>
+	    </li>
+
+	  </ul>
+	</div>
+      </div>
+    </nav>
+
+    <main role="main" class="container mt-3 mb-5">
+
+      {% bootstrap_messages %}
+
+      {% block main %}
+        <div class="starter-template card-body  bg-light card p-5">
+          <h1>{% translate 'Exerciser' %}</h1>
+          <p class="lead mt-2">
+            {% translate 'Practice English with your favourite texts. Exercises are created dynamically in accordance with the text you provide.' %}
+            <br>
+	    {% if not request.user.is_authenticated %}
+	      {% translate 'Please log in and upload text to get started.' %}
+	    {% endif %}
+          </p>
+        </div>
+      {% endblock %}
+
+      {% if page_obj.paginator.num_pages > 1 %}
+	<div class="pagination">
+	  <span class="step-links">
+	    {% if page_obj.has_previous %}
+	      <a class="me-2" href="?page=1">&laquo; first</a>
+	      <a class="me-2" href="?page={{ page_obj.previous_page_number }}">previous</a>
+	    {% endif %}
+
+	    <span class="current">
+	      Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+	    </span>
+
+	    {% if page_obj.has_next %}
+	      <a class="ms-2" href="?page={{ page_obj.next_page_number }}">next</a>
+	      <a class="ms-2" href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+	    {% endif %}
+	  </span>
+	</div>
+      {% endif %}
+
+    </main>
+
+  </body>
+</html>
