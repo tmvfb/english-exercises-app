@@ -50,7 +50,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'english_exercises_app',
     'english_exercises_app.users',
-    'english_exercises_app.tasks',
+    'english_exercises_app.exercises',
     'django_bootstrap5'
 ]
 
@@ -154,6 +154,9 @@ LANGUAGES = (
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / "static"]
 
+# Server uploads
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
@@ -167,4 +170,9 @@ LOGOUT_REDIRECT_URL = '/'
 CSRF_TRUSTED_ORIGINS = [
     'https://python-project-52-production-ae52.up.railway.app',
     'https://github.com'
+]
+
+FILE_UPLOAD_HANDLERS = [
+    "django.core.files.uploadhandler.MemoryFileUploadHandler",
+    "django.core.files.uploadhandler.TemporaryFileUploadHandler",
 ]

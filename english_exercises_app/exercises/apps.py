@@ -3,4 +3,4 @@ from django.apps import AppConfig
 
 class TasksConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'english_exercises_app.tasks'
+    name = 'english_exercises_app.exercises'

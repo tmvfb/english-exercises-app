@@ -22,7 +22,7 @@ from . import views
 urlpatterns = [
     path('', views.HomePageView.as_view(), name='home'),
     path('users/', include('english_exercises_app.users.urls')),
-    path('tasks/', include('english_exercises_app.tasks.urls')),
+    path('exercises/', include('english_exercises_app.exercises.urls')),
     path('i18n/', include('django.conf.urls.i18n')),
     path('admin/', admin.site.urls),
 ]
