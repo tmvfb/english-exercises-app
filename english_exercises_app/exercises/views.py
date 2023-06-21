@@ -7,34 +7,44 @@ from django.shortcuts import render
 from django.contrib import messages
 from .forms import FileForm
 from .models import File
+
 # from english_exercises_app.mixins import MessagesMixin
 
 
 class ExerciseCreateView(TemplateView):
     def get(self, request):
-        return HttpResponse('Hi!')
+        return HttpResponse("Hi!")
 
 
 class ExerciseShowView(TemplateView):
     def get(self, request):
-        return HttpResponse('Hi!')
+        return HttpResponse("Hi!")
 
 
 class ExerciseUploadView(TemplateView):
     def get(self, request):
         form = FileForm()
-        return render(request, 'exercises/upload.html', {'form': form})
+        return render(request, "exercises/upload.html", {"form": form})
 
     def post(self, request):
         form = FileForm(request.POST, request.FILES)
 
         if form.is_valid():
-            f = request.FILES["file"]
-            with open("temp.txt", "wb+") as destination:
-                for chunk in f.chunks():
-                    destination.write(chunk)
-            return render(request, 'exercises/upload.html', {'form': form})
+            # delete previous file and db entry, if exist
+            try:
+                previous_file = File.objects.get(user=request.user)
+                previous_file.file.delete()
+                previous_file.delete()
+            except File.DoesNotExist:
+                pass
+
+            file_instance = File(file=request.FILES["file"], user=request.user)
+            file_instance.save()
+            messages.success(request, _("File uploaded successfully!"))
+            return render(request, "exercises/upload.html", {"form": form})
 
         else:
-            messages.warning(request, _('Something went wrong'))
-            return redirect(reverse_lazy('exercise_upload'))
+            messages.warning(
+                request, _("Something went wrong. Please check file format")
+            )
+            return redirect(reverse_lazy("exercise_upload"))

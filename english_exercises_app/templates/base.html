@@ -28,9 +28,6 @@
     </script>
     <script type="module" src="{% static 'theme_toggle.js' %}"></script>
 
-    <!-- Adding correct labels for files upload -->
-    <script type="text/javascript" src="{% static 'bootstrap-filestyle.min.js' %}"></script>
-
     <title>{% translate 'Exerciser' %}</title>
 
     <link rel="canonical" href="https://getbootstrap.com/docs/5.0/examples/starter-template/">
@@ -58,7 +55,10 @@
 	  <ul class="navbar-nav me-auto mt-2 mt-lg-0">
 	    {% if request.user.is_authenticated %}
 	    <li class="nav-item">
-	      <a class="nav-link" href="{% url 'exercise_upload' %}">{% translate 'Upload exercises' %}</a>
+	      <a class="nav-link" href="{% url 'exercise_upload' %}">{% translate 'Upload text' %}</a>
+	    </li>
+	    <li class="nav-item">
+	      <a class="nav-link" href="{% url 'exercise_create' %}">{% translate 'Create exercises' %}</a>
 	    </li>
 	    {% endif %}
 	  </ul>
