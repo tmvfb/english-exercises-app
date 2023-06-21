@@ -5,15 +5,38 @@ from django.views.generic.base import TemplateView
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.contrib import messages
-from .forms import FileForm
+from .forms import FileForm, FilterForm
 from .models import File
+from text_processing.prepare_data import prepare_exercises
 
 # from english_exercises_app.mixins import MessagesMixin
 
 
 class ExerciseCreateView(TemplateView):
     def get(self, request):
-        return HttpResponse("Hi!")
+        form = FilterForm()
+        return render(request, "exercises/create.html", {"form": form})
+
+    def post(self, request):
+        form = FilterForm(request.POST)
+
+        if form.is_valid():
+            count = form.cleaned_data['count']  # integer
+            pos = form.cleaned_data['pos']  # list
+            ex_type = form.cleaned_data['type_']  # string
+            length = form.cleaned_data['length']  # integer
+
+            exercises = prepare_exercises(
+                count,
+                pos,
+                ex_type,
+                length
+            )
+
+            return HttpResponse(exercises)
+
+        else:
+            return render(request, "exercises/create.html", {"form": form})
 
 
 class ExerciseShowView(TemplateView):
