@@ -1,0 +1,4 @@
+{% load i18n %}
+{% url 'user_login' as new_url %}
+{% translate "Sign in" as button %}
+{% include "users/create.html" with url_=new_url button=button w1="col-lg-6 col-md-8 col-sm-12"  %}
