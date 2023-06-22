@@ -74,15 +74,22 @@ class ExerciseShowView(TemplateView):
     """
 
     def get(self, request):
-        correct_answer = "SOS"
-        exercise_type = "SAS"
+        data = prepare_exercises()
         form = TypeInExercise(
             initial={
-                "exercise_type": exercise_type,
-                "correct_answer": correct_answer,
+                "exercise_type": data["exercise_type"],
+                "correct_answer": data["correct_answer"],
             }
         )
-        return render(request, "exercises/show.html", {"form": form})
+        return render(
+            request,
+            "exercises/show.html",
+            {
+                "form": form,
+                "begin": data["sentence"][0],
+                "end": data["sentence"][1],
+            },
+        )
 
     def post(self, request):
         form = TypeInExercise(request.POST)
@@ -93,6 +100,8 @@ class ExerciseShowView(TemplateView):
             correct_answer = form.cleaned_data["correct_answer"]
             user_answer = form.cleaned_data["user_answer"]
 
+            data = prepare_exercises()
+
             form.save(
                 user=user,
                 exercise_type=exercise_type,
@@ -100,10 +109,23 @@ class ExerciseShowView(TemplateView):
             )
 
             if user_answer == correct_answer:
+                correct = True
                 messages.success(request, _("Correct!"))
             else:
+                correct = False
                 messages.error(request, _("Sorry, your answer is incorrect"))
-            return render(request, "exercises/show.html", {"form": form})
+
+            return render(
+                request,
+                "exercises/show.html",
+                {
+                    "form": form,
+                    "begin": data["sentence"][0],
+                    "end": data["sentence"][1],
+                    "button_status": "disabled",
+                    "correct_answer": correct_answer if not correct else None
+                },
+            )
 
         else:
             return redirect("exercise_show")
