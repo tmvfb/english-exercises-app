@@ -1,5 +1,5 @@
 from django import forms
-from .models import File
+from .models import File, Exercise
 from django.utils.translation import gettext_lazy as _
 
 
@@ -82,3 +82,20 @@ class FilterForm(forms.Form):
             }
         )
     )
+
+
+# let's have one form per every exercise
+class TypeInExercise(forms.Form):
+    class Meta:
+        model = Exercise
+        fields = ['user', 'user_answer', 'correct_answer', 'exercise_type']
+        widgets = {
+            "user_answer": forms.TextInput(
+                attrs={
+                    "class": "form-control"
+                }
+            ),
+            "user": forms.HiddenInput(),
+            "correct_answer": forms.HiddenInput(),
+            "exercise_type": forms.HiddenInput()
+        }

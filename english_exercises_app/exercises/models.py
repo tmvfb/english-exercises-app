@@ -13,3 +13,20 @@ class File(models.Model):
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE
     )
+
+
+class Exercise(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE
+    )
+    exercise_type = models.CharField(max_length=255)
+    user_answer = models.CharField(max_length=255)
+    correct_answer = models.CharField(max_length=255)
+    flag = models.BooleanField()
+
+    def save(self, *args, **kwargs):
+        if self.user_answer == self.correct_answer:
+            self.flag = True
+        else:
+            self.flag = False
+        super().save(*args, **kwargs)
