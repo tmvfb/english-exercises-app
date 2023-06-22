@@ -12,14 +12,27 @@
       </div>
 
       <div class="card-body bg-light">
-
-        <div class="container">
-          <div class="row p-1">
-            {% for field in form %}
-              {{ field.name }}
-            {% endfor %}
+        <form action="{% url 'exercise_show' %}" method="post" class="needs-validation" novalidate>
+          <div class="form-group">
+            {% csrf_token %}
+            <table class="table table-hover table-borderless" required>
+                {% for field in form %}
+                  <tr>
+                    <th class="align-middle">{{ field.label_tag|slice:":-9" }}</th>
+                <td>
+                  {{ field }}
+                  {% if field.name == "count" %}
+                    <label for="rangeInput" id="rangeValue" class="col-12 d-flex flex-row-reverse">{{ form.count.value }}</label>
+                  {% endif %}
+                </td>
+                  </tr>
+                {% endfor %}
+            </table>
+            <div class="col-12 d-flex flex-row-reverse">
+              <input class="btn btn-outline-success btn-md col-lg-3 col-md-3 col-sm-4 text-uppercase" type="submit" value="{% translate 'Check' %}">
+            </div>
           </div>
-        </div>
+        </form>
 
       </div>
     </div>

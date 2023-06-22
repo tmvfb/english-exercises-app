@@ -1,4 +1,4 @@
-from django.urls import reverse_lazy
+# from django.urls import reverse
 from django.shortcuts import redirect, render
 from django.utils.translation import gettext_lazy as _
 from django.views.generic.base import TemplateView
@@ -37,10 +37,14 @@ class ExerciseUploadView(TemplateView):
             messages.warning(
                 request, _("Something went wrong. Please check file format")
             )
-            return redirect(reverse_lazy("exercise_upload"))
+            return redirect("exercise_upload")
 
 
 class ExerciseCreateView(TemplateView):
+    """
+    This class defines the parameters that are sent to text_processing module.
+    """
+
     def get(self, request):
         form = FilterForm()
         return render(request, "exercises/create.html", {"form": form})
@@ -50,17 +54,12 @@ class ExerciseCreateView(TemplateView):
 
         if form.is_valid():
             # TODO: more options to come
-            count = form.cleaned_data['count']  # integer
-            pos = form.cleaned_data['pos']  # list
-            ex_type = form.cleaned_data['type_']  # string
-            length = form.cleaned_data['length']  # integer
+            count = form.cleaned_data["count"]  # integer
+            pos = form.cleaned_data["pos"]  # list
+            ex_type = form.cleaned_data["type_"]  # string
+            length = form.cleaned_data["length"]  # integer
 
-            exercises = prepare_exercises(
-                count,
-                pos,
-                ex_type,
-                length
-            )
+            exercises = prepare_exercises(count, pos, ex_type, length)
 
             return HttpResponse(exercises)
 
@@ -69,6 +68,42 @@ class ExerciseCreateView(TemplateView):
 
 
 class ExerciseShowView(TemplateView):
+    """
+    This class shows exercises
+    and adds user input to database to maintain stats.
+    """
+
     def get(self, request):
-        form = TypeInExercise()
+        correct_answer = "SOS"
+        exercise_type = "SAS"
+        form = TypeInExercise(
+            initial={
+                "exercise_type": exercise_type,
+                "correct_answer": correct_answer,
+            }
+        )
         return render(request, "exercises/show.html", {"form": form})
+
+    def post(self, request):
+        form = TypeInExercise(request.POST)
+
+        if form.is_valid():
+            user = request.user
+            exercise_type = form.cleaned_data["exercise_type"]
+            correct_answer = form.cleaned_data["correct_answer"]
+            user_answer = form.cleaned_data["user_answer"]
+
+            form.save(
+                user=user,
+                exercise_type=exercise_type,
+                correct_answer=correct_answer,
+            )
+
+            if user_answer == correct_answer:
+                messages.success(request, _("Correct!"))
+            else:
+                messages.error(request, _("Sorry, your answer is incorrect"))
+            return render(request, "exercises/show.html", {"form": form})
+
+        else:
+            return redirect("exercise_show")

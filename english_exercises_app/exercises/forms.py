@@ -85,17 +85,25 @@ class FilterForm(forms.Form):
 
 
 # let's have one form per every exercise
-class TypeInExercise(forms.Form):
+class TypeInExercise(forms.ModelForm):
     class Meta:
         model = Exercise
-        fields = ['user', 'user_answer', 'correct_answer', 'exercise_type']
+        fields = ['user_answer', 'exercise_type', 'correct_answer']
         widgets = {
             "user_answer": forms.TextInput(
                 attrs={
                     "class": "form-control"
                 }
             ),
-            "user": forms.HiddenInput(),
+            "exercise_type": forms.HiddenInput(),
             "correct_answer": forms.HiddenInput(),
-            "exercise_type": forms.HiddenInput()
         }
+
+    def save(self, user, correct_answer, exercise_type, commit=True):
+        instance = super().save(commit=False)
+        instance.user = user
+        instance.correct_answer = correct_answer
+        instance.exercise_type = exercise_type
+        if commit:
+            instance.save()
+        return instance
