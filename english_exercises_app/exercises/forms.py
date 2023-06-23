@@ -6,6 +6,7 @@ from django.utils.translation import gettext_lazy as _
 class FileForm(forms.ModelForm):
     """
     Form for file upload. Has file format check.
+    1 entry per user.
     """
 
     file = forms.FileField(
@@ -27,21 +28,18 @@ class FileForm(forms.ModelForm):
         """
 
         cleaned_data = super().clean()
+
         file = cleaned_data.get("file")
+        if file and not file._name.endswith((".txt", ".csv")):
+            raise forms.ValidationError(_("Incorrect file format"))
 
-        if file:
-            filename = file.name
-            print(filename)
-            if not filename.endswith((".txt", ".csv")):
-                raise forms.ValidationError(_("Incorrect file format"))
-
-        return file
+        return cleaned_data
 
 
 class FilterForm(forms.ModelForm):
     """
-    Sets parameters for exercise generation and stores them in
-    Memory model.
+    Sets current parameters for exercise generation and stores them in
+    Memory model. 1 entry per user.
     """
 
     count = forms.IntegerField(
@@ -100,7 +98,9 @@ class FilterForm(forms.ModelForm):
 
     def save(self, user, commit=True):
         # delete previous entry, if exists
-        Memory.objects.filter(user=user).first().delete()
+        memory = Memory.objects.filter(user=user).first()
+        if memory is not None:
+            memory.delete()
 
         instance = super().save(commit=False)
         instance.user = user
@@ -111,6 +111,15 @@ class FilterForm(forms.ModelForm):
 
 # let's have one form per every exercise
 class TypeInExercise(forms.ModelForm):
+    begin = forms.CharField(
+        max_length=1023,
+        widget=forms.HiddenInput(),
+    )
+    end = forms.CharField(
+        max_length=1023,
+        widget=forms.HiddenInput(),
+    )
+
     class Meta:
         model = Exercise
         fields = ["user_answer", "exercise_type", "correct_answer"]
@@ -120,11 +129,9 @@ class TypeInExercise(forms.ModelForm):
             "correct_answer": forms.HiddenInput(),
         }
 
-    def save(self, user, correct_answer, exercise_type, commit=True):
+    def save(self, user, commit=True):
         instance = super().save(commit=False)
         instance.user = user
-        instance.correct_answer = correct_answer
-        instance.exercise_type = exercise_type
         if commit:
             instance.save()
         return instance

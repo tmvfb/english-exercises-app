@@ -25,12 +25,10 @@ class ExerciseUploadView(TemplateView):
 
         if form.is_valid():
             # delete previous file and db entry, if exist
-            try:
-                previous_file = File.objects.get(user=request.user)
-                previous_file.file.delete()
-                previous_file.delete()
-            except File.DoesNotExist:
-                pass
+            file = File.objects.filter(user=request.user).first()
+            if file is not None:
+                file.file.delete()
+                file.delete()
 
             file_instance = File(file=request.FILES["file"], user=request.user)
             file_instance.save()
@@ -38,6 +36,7 @@ class ExerciseUploadView(TemplateView):
             return render(request, "exercises/upload.html", {"form": form})
 
         else:
+            print(form.errors)
             messages.warning(
                 request, _("Something went wrong. Please check file format")
             )
@@ -63,15 +62,7 @@ class ExerciseCreateView(TemplateView):
             # ex_type = form.cleaned_data["exercise_type"]  # string
             # length = form.cleaned_data["length"]  # integer
             form.save(user=request.user)
-
-            params = Memory.objects.filter(user=request.user).first()
-            kwargs = {
-                field.name: getattr(params, field.name)
-                for field in params._meta.fields
-            }
-            exercises = prepare_exercises(**kwargs)
-
-            return HttpResponse(exercises)
+            return redirect("exercise_show")
 
         else:
             messages.error(request, _("Please select all the parameters"))
@@ -85,39 +76,43 @@ class ExerciseShowView(TemplateView):
     """
 
     def get(self, request):
-        data = prepare_exercises()
+        # check if any file was uploaded
+        file = File.objects.filter(user=request.user).first()
+        if file is not None:
+            filepath = file.file.path
+        else:
+            messages.error(request, _("Please upload a file."))
+            return redirect("exercise_upload")
+        print(filepath)
+
+        # retrieve current params for exercise generation
+        params = Memory.objects.filter(user=request.user).first()
+        kwargs = {
+            field.name: getattr(params, field.name)
+            for field in params._meta.fields
+        }
+
+        # prepare exercises and populate form fields
+        data = prepare_exercises(filepath, **kwargs)
         form = TypeInExercise(
             initial={
                 "exercise_type": data["exercise_type"],
                 "correct_answer": data["correct_answer"],
+                "begin": data["sentence"][0],
+                "end": data["sentence"][1]
             }
         )
-        return render(
-            request,
-            "exercises/show.html",
-            {
-                "form": form,
-                "begin": data["sentence"][0],
-                "end": data["sentence"][1],
-            },
-        )
+        return render(request, "exercises/show.html", {"form": form})
 
     def post(self, request):
         form = TypeInExercise(request.POST)
 
         if form.is_valid():
             user = request.user
-            exercise_type = form.cleaned_data["exercise_type"]
             correct_answer = form.cleaned_data["correct_answer"]
             user_answer = form.cleaned_data["user_answer"]
 
-            data = prepare_exercises()
-
-            form.save(
-                user=user,
-                exercise_type=exercise_type,
-                correct_answer=correct_answer,
-            )
+            form.save(user=user)
 
             if user_answer == correct_answer:
                 correct = True
@@ -131,8 +126,6 @@ class ExerciseShowView(TemplateView):
                 "exercises/show.html",
                 {
                     "form": form,
-                    "begin": data["sentence"][0],
-                    "end": data["sentence"][1],
                     "button_status": "disabled",
                     "correct_answer": correct_answer if not correct else None,
                 },

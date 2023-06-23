@@ -19,7 +19,7 @@
             <table class="table table-hover table-borderless" required>
               <tr>
                 <td class="row d-flex align-items-center">
-                  {{ begin }} <span class="col-2"> {{ form.user_answer }} </span> {{ end }}
+                  {{ form.begin.value }} <span class="col-2"> {{ form.user_answer }} </span>{{ form.end.value }}
 		  {% if correct_answer %}
                   <div class="text-secondary">
                     ({% translate "Correct answer:" %} <span class="text-success fw-bold">{{ correct_answer }}</span>)</div>
