@@ -5,13 +5,17 @@ from django.views.generic.base import TemplateView
 from django.http import HttpResponse
 from django.contrib import messages
 from .forms import FileForm, FilterForm, TypeInExercise
-from .models import File
+from .models import File, Memory
 from text_processing.prepare_data import prepare_exercises
 
 # from english_exercises_app.mixins import MessagesMixin
 
 
 class ExerciseUploadView(TemplateView):
+    """
+    This class defines logic of file upload.
+    """
+
     def get(self, request):
         form = FileForm()
         return render(request, "exercises/upload.html", {"form": form})
@@ -53,18 +57,25 @@ class ExerciseCreateView(TemplateView):
         form = FilterForm(request.POST)
 
         if form.is_valid():
-            # TODO: more options to come
-            count = form.cleaned_data["count"]  # integer
-            pos = form.cleaned_data["pos"]  # list
-            ex_type = form.cleaned_data["type_"]  # string
-            length = form.cleaned_data["length"]  # integer
+            # # TODO: more options to come
+            # count = form.cleaned_data["count"]  # integer
+            # pos = form.cleaned_data["pos"]  # list
+            # ex_type = form.cleaned_data["exercise_type"]  # string
+            # length = form.cleaned_data["length"]  # integer
+            form.save(user=request.user)
 
-            exercises = prepare_exercises(count, pos, ex_type, length)
+            params = Memory.objects.filter(user=request.user).first()
+            kwargs = {
+                field.name: getattr(params, field.name)
+                for field in params._meta.fields
+            }
+            exercises = prepare_exercises(**kwargs)
 
             return HttpResponse(exercises)
 
         else:
-            return redirect("exercise_show")
+            messages.error(request, _("Please select all the parameters"))
+            return redirect("exercise_create")
 
 
 class ExerciseShowView(TemplateView):
@@ -123,7 +134,7 @@ class ExerciseShowView(TemplateView):
                     "begin": data["sentence"][0],
                     "end": data["sentence"][1],
                     "button_status": "disabled",
-                    "correct_answer": correct_answer if not correct else None
+                    "correct_answer": correct_answer if not correct else None,
                 },
             )
 

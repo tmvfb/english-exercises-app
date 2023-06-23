@@ -1,9 +1,13 @@
 from django import forms
-from .models import File, Exercise
+from .models import File, Exercise, Memory
 from django.utils.translation import gettext_lazy as _
 
 
-class FileForm(forms.Form):
+class FileForm(forms.ModelForm):
+    """
+    Form for file upload. Has file format check.
+    """
+
     file = forms.FileField(
         widget=forms.FileInput(
             attrs={
@@ -18,9 +22,9 @@ class FileForm(forms.Form):
         fields = ["file"]
 
     def clean(self):
-        '''
+        """
         Checks file format.
-        '''
+        """
 
         cleaned_data = super().clean()
         file = cleaned_data.get("file")
@@ -34,7 +38,12 @@ class FileForm(forms.Form):
         return file
 
 
-class FilterForm(forms.Form):
+class FilterForm(forms.ModelForm):
+    """
+    Sets parameters for exercise generation and stores them in
+    Memory model.
+    """
+
     count = forms.IntegerField(
         initial=50,
         widget=forms.NumberInput(
@@ -44,21 +53,27 @@ class FilterForm(forms.Form):
                 "min": 1,
                 "max": 99,
                 "step": 1,
-                "id": "rangeInput"
+                "id": "rangeInput",
             }
         ),
     )
     pos = forms.MultipleChoiceField(
         label=_("Parts of speech"),
-        choices=(("v", "Verbs"), ("n", "Nouns"), ("a", "Adjectives")),
-        widget=forms.SelectMultiple(
+        choices=(
+            ("all", "All"),
+            ("v", "Verbs"),
+            ("n", "Nouns"),
+            ("a", "Adjectives"),
+        ),
+        initial="all",
+        widget=forms.CheckboxSelectMultiple(
             attrs={
-                "class": "form-select",
-                "multiple": True
+                # "class": "form-select",
+                "multiple": True,
             }
         ),
     )
-    type_ = forms.ChoiceField(
+    exercise_type = forms.ChoiceField(
         label=_("Exercise type"),
         choices=(
             ("a", "All"),
@@ -76,25 +91,31 @@ class FilterForm(forms.Form):
         min_value=1,
         initial=1,
         label=_("Sentences per exercise"),
-        widget=forms.NumberInput(
-            attrs={
-                "class": "form-control"
-            }
-        )
+        widget=forms.NumberInput(attrs={"class": "form-control"}),
     )
+
+    class Meta:
+        model = Memory
+        fields = ["count", "pos", "exercise_type", "length"]
+
+    def save(self, user, commit=True):
+        # delete previous entry, if exists
+        Memory.objects.filter(user=user).first().delete()
+
+        instance = super().save(commit=False)
+        instance.user = user
+        if commit:
+            instance.save()
+        return instance
 
 
 # let's have one form per every exercise
 class TypeInExercise(forms.ModelForm):
     class Meta:
         model = Exercise
-        fields = ['user_answer', 'exercise_type', 'correct_answer']
+        fields = ["user_answer", "exercise_type", "correct_answer"]
         widgets = {
-            "user_answer": forms.TextInput(
-                attrs={
-                    "class": "form-control"
-                }
-            ),
+            "user_answer": forms.TextInput(attrs={"class": "form-control"}),
             "exercise_type": forms.HiddenInput(),
             "correct_answer": forms.HiddenInput(),
         }
