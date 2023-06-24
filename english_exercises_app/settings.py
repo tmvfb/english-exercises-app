@@ -36,7 +36,7 @@ DEBUG = os.getenv('DEBUG', 'False')
 
 ALLOWED_HOSTS = [
     'webserver', 'localhost', '127.0.0.1', '0.0.0.0',
-    'python-project-52-production-ae52.up.railway.app'
+    'english-exercises-app-production.up.railway.app'
 ]
 
 # Application definition
@@ -168,7 +168,7 @@ LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://python-project-52-production-ae52.up.railway.app',
+    'https://english-exercises-app-production.up.railway.app',
     'https://github.com'
 ]
 
