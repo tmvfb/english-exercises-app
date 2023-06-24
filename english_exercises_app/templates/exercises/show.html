@@ -8,7 +8,7 @@
     <div class="card" >
 
       <div class="card-header bg-secondary text-white">
-        <h2>{% translate 'Exercise' %} #</h2>
+        <h2>{% translate 'Exercise' %}</h2>  <!-- TODO -->
       </div>
 
       <div class="card-body bg-light">
@@ -18,13 +18,18 @@
 
             <table class="table table-hover table-borderless" required>
               <tr>
-                <td class="row d-flex align-items-center">
-                  {{ form.begin.value }} <span class="col-2"> {{ form.user_answer }} </span>{{ form.end.value }}
-		  {% if correct_answer %}
-                  <div class="text-secondary">
-                    ({% translate "Correct answer:" %} <span class="text-success fw-bold">{{ correct_answer }}</span>)</div>
-                  {% endif %}
-                </td>
+		<td class="row">
+                  <div class="align-items-center">
+                    {{ form.begin.value }}
+                    <span class="p-2 col-auto d-inline-flex">
+                      {{ form.user_answer }}
+                    </span>
+                    {% if correct_answer %}
+                      <span class="text-secondary fw-lighter me-2">(<span class="text-success fw-bold">{{ correct_answer }}</span>) </span>
+                    {% endif %}
+                    {{ form.end.value }}
+                  </div>
+		</td>
               </tr>
             </table>
 
@@ -35,6 +40,11 @@
             {% endfor %}
 
             <div class="col-12 d-flex flex-row-reverse">
+              {% if button_status %}
+                <a href="{% url 'exercise_show' %}" class="btn btn-outline-info btn-md col-auto text-uppercase ms-3">{% translate 'Next' %}</a>
+              {% else %}
+                <a href="{% url 'exercise_show' %}" class="btn btn-outline-secondary btn-md col-auto text-uppercase ms-3">{% translate 'Skip' %}</a>
+              {% endif %}
               <input {{ button_status }} class="btn btn-outline-success btn-md col-lg-3 col-md-3 col-sm-4 text-uppercase" type="submit" value="{% translate 'Check' %}">
             </div>
 

@@ -21,6 +21,7 @@ whitenoise = "^6.5.0"
 django-bootstrap5 = "^23.3"
 gensim = "^4.3.1"
 spacy = "^3.5.3"
+sentence-splitter = "^1.4"
 
 
 [build-system]

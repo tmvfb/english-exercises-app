@@ -33,7 +33,7 @@ class ExerciseUploadView(TemplateView):
             file_instance = File(file=request.FILES["file"], user=request.user)
             file_instance.save()
             messages.success(request, _("File uploaded successfully!"))
-            return render(request, "exercises/upload.html", {"form": form})
+            return redirect("exercise_create")
 
         else:
             print(form.errors)
@@ -132,4 +132,11 @@ class ExerciseShowView(TemplateView):
             )
 
         else:
-            return redirect("exercise_show")
+            messages.error(request, _("Please provide a valid answer."))
+            return render(
+                request,
+                "exercises/show.html",
+                {
+                    "form": form,
+                },
+            )
