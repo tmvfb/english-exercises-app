@@ -6,9 +6,7 @@ import spacy
 import spacy.cli
 from sentence_splitter import SentenceSplitter
 
-if not os.getenv("DEBUG", "False"):  # don't download on dev server
-    spacy.cli.download("en_core_web_sm")
-
+spacy.cli.download("en_core_web_sm")
 nlp = spacy.load("en_core_web_sm")
 model = gensim.downloader.load("glove-wiki-gigaword-100")
 
