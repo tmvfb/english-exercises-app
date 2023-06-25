@@ -92,15 +92,16 @@ def type_in_exercise(sentences: list, pos: list, length: int) -> tuple:
         selected_tokens = [
             (token.text, token.i) for token in doc if token.pos_ in pos
         ]
-        if selected_tokens:
-            selected_token = random.choice(selected_tokens)
-        # in case sentence doesn't contain desired pos
-        else:
-            return type_in_exercise(sentences, pos, length)
-
     else:
-        rng = random.randint(1, len(tokens) - 2)  # exclude 1st and last
-        selected_token = (tokens[rng], rng)
+        selected_tokens = [
+            (token.text, token.i) for token in doc if not token.is_punct
+        ][1: -1]  # slice 1st and last to remove undesired behaviour
+
+    if selected_tokens:
+        selected_token = random.choice(selected_tokens)
+    # in case sentence doesn't contain desired pos
+    else:
+        return type_in_exercise(sentences, pos, length)
 
     # selected_token[0] is the token, selected_token[1] is index
     begin = "".join(tokens[: selected_token[1]])
