@@ -1,6 +1,6 @@
 from django.urls import path
-from . import views
 
+from . import views
 
 urlpatterns = [
     path('', views.ExerciseShowView.as_view(), name='exercise_show'),  # noqa: E501

@@ -1,10 +1,12 @@
 from django.contrib import messages
+from django.contrib.auth.views import LoginView, LogoutView
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
-from django.contrib.auth.views import LoginView, LogoutView
 from django.views.generic import CreateView
-from .forms import LoginForm, RegistrationForm
+
 from english_exercises_app.mixins import MessagesMixin
+
+from .forms import LoginForm, RegistrationForm
 
 
 class UserCreateView(MessagesMixin, CreateView):

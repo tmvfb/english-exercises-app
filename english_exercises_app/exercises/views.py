@@ -1,12 +1,14 @@
 # from django.urls import reverse
+from django.contrib import messages
+from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.utils.translation import gettext_lazy as _
 from django.views.generic.base import TemplateView
-from django.http import HttpResponse
-from django.contrib import messages
+
+from text_processing.prepare_data import prepare_exercises
+
 from .forms import FileForm, FilterForm, TypeInExercise
 from .models import File, Memory
-from text_processing.prepare_data import prepare_exercises
 
 # from english_exercises_app.mixins import MessagesMixin
 

@@ -1,7 +1,9 @@
 from django import forms
-from .models import File, Exercise, Memory
 from django.utils.translation import gettext_lazy as _
+
 from text_processing.prepare_data import remove_data
+
+from .models import Exercise, File, Memory
 
 
 class FileForm(forms.ModelForm):
