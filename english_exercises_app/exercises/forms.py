@@ -40,7 +40,7 @@ class FileForm(forms.ModelForm):
         # delete previous files and db entry, if exist
         file = File.objects.filter(user=user).first()
         if file is not None:
-            remove_data(file.file.path, str(user))
+            remove_data(file.file.path, str(user))  # rm associated json
             file.file.delete()
             file.delete()
 

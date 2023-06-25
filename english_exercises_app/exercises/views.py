@@ -46,7 +46,7 @@ class ExerciseCreateView(TemplateView):
         return render(request, "exercises/create.html", {"form": form})
 
     def post(self, request):
-        form = FilterForm(request.POST)
+        form = FilterForm(request.POST)  # adds entry to Memory model
 
         if form.is_valid():
             # # TODO: more options to come
@@ -79,6 +79,15 @@ class ExerciseShowView(TemplateView):
 
         # retrieve current params for exercise generation
         params = Memory.objects.filter(user=request.user).first()
+        if params.current_count == params.count:
+            messages.success(
+                request, _("You have completed all the exercises!")
+            )
+            return redirect("exercise_create")
+        else:
+            params.current_count += 1
+            params.save()
+
         kwargs = {
             field.name: getattr(params, field.name)
             for field in params._meta.fields
@@ -91,16 +100,27 @@ class ExerciseShowView(TemplateView):
                 "exercise_type": data["exercise_type"],
                 "correct_answer": data["correct_answer"],
                 "begin": data["sentence"][0],
-                "end": data["sentence"][1]
+                "end": data["sentence"][1],
             }
         )
-        return render(request, "exercises/show.html", {"form": form})
+        return render(
+            request,
+            "exercises/show.html",
+            {
+                "form": form,
+                "count": params.count,
+                "current_count": params.current_count,
+            },
+        )
 
     def post(self, request):
         form = TypeInExercise(request.POST)
+        user = request.user
+
+        # can get rid of this if pass the params with form
+        params = Memory.objects.filter(user=user).first()
 
         if form.is_valid():
-            user = request.user
             correct_answer = form.cleaned_data["correct_answer"]
             user_answer = form.cleaned_data["user_answer"]
 
@@ -120,6 +140,8 @@ class ExerciseShowView(TemplateView):
                     "form": form,
                     "button_status": "disabled",
                     "correct_answer": correct_answer if not correct else None,
+                    "count": params.count,
+                    "current_count": params.current_count,
                 },
             )
 
@@ -130,5 +152,7 @@ class ExerciseShowView(TemplateView):
                 "exercises/show.html",
                 {
                     "form": form,
+                    "count": params.count,
+                    "current_count": params.current_count,
                 },
             )
