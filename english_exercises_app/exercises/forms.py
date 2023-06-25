@@ -73,12 +73,12 @@ class FilterForm(forms.ModelForm):
     pos = forms.MultipleChoiceField(
         label=_("Parts of speech"),
         choices=(
-            ("all", "All"),
-            ("v", "Verbs"),
-            ("n", "Nouns"),
-            ("a", "Adjectives"),
+            ("ALL", "All"),
+            ("VERB", "Verbs"),
+            ("NOUN", "Nouns"),
+            ("ADJ", "Adjectives"),
         ),
-        initial="all",
+        initial="ALL",
         widget=forms.CheckboxSelectMultiple(
             attrs={
                 # "class": "form-select",
