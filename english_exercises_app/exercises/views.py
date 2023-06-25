@@ -24,14 +24,7 @@ class ExerciseUploadView(TemplateView):
         form = FileForm(request.POST, request.FILES)
 
         if form.is_valid():
-            # delete previous file and db entry, if exist
-            file = File.objects.filter(user=request.user).first()
-            if file is not None:
-                file.file.delete()
-                file.delete()
-
-            file_instance = File(file=request.FILES["file"], user=request.user)
-            file_instance.save()
+            form.save(user=request.user)
             messages.success(request, _("File uploaded successfully!"))
             return redirect("exercise_create")
 
@@ -83,7 +76,6 @@ class ExerciseShowView(TemplateView):
         else:
             messages.error(request, _("Please upload a file."))
             return redirect("exercise_upload")
-        print(filepath)
 
         # retrieve current params for exercise generation
         params = Memory.objects.filter(user=request.user).first()

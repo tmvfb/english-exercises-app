@@ -1,6 +1,7 @@
 from django import forms
 from .models import File, Exercise, Memory
 from django.utils.translation import gettext_lazy as _
+from text_processing.prepare_data import remove_data
 
 
 class FileForm(forms.ModelForm):
@@ -34,6 +35,20 @@ class FileForm(forms.ModelForm):
             raise forms.ValidationError(_("Incorrect file format"))
 
         return cleaned_data
+
+    def save(self, user, commit=True):
+        # delete previous files and db entry, if exist
+        file = File.objects.filter(user=user).first()
+        if file is not None:
+            remove_data(file.file.path, str(user))
+            file.file.delete()
+            file.delete()
+
+        instance = super().save(commit=False)
+        instance.user = user
+        if commit:
+            instance.save()
+        return instance
 
 
 class FilterForm(forms.ModelForm):
