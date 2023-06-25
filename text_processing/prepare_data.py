@@ -1,12 +1,14 @@
+import json
+import os
 import random
 import re
-import os
-import json
-from sentence_splitter import SentenceSplitter
+
 # import gensim.downloader
 import spacy
-# import spacy.cli
-# spacy.cli.download("en_core_web_sm")
+import spacy.cli
+from sentence_splitter import SentenceSplitter
+
+spacy.cli.download("en_core_web_sm")
 
 
 def load_data(filepath: str, username: str) -> list:
@@ -24,7 +26,7 @@ def load_data(filepath: str, username: str) -> list:
         with open(filepath, "r") as file:
             text = file.read()
 
-        splitter = SentenceSplitter(language='en')
+        splitter = SentenceSplitter(language="en")
         sentences = splitter.split(text)
         with open(path, "w") as f:
             f.write(json.dumps(sentences))
@@ -43,7 +45,9 @@ def remove_data(filepath: str, username: str, **kwargs):
 
 def prepare_exercises(filepath: str, **kwargs) -> dict:
     sentences = load_data(filepath, str(kwargs.get("user")))
-    correct_answer, begin, end = type_in_exercise(sentences, kwargs.get("pos"))
+    correct_answer, begin, end = type_in_exercise(
+        sentences, kwargs.get("pos"), kwargs.get("length")
+    )
 
     kwargs["correct_answer"] = correct_answer
     kwargs["sentence"] = [begin, end]
@@ -51,19 +55,26 @@ def prepare_exercises(filepath: str, **kwargs) -> dict:
     return kwargs
 
 
-def type_in_exercise(sentences: list, pos: list) -> tuple:
+def type_in_exercise(sentences: list, pos: list, length: int) -> tuple:
+    if len(sentences) < length:
+        raise Exception("Provided text is too short.")
 
     while True:
-        rng_sentence = random.randint(0, len(sentences)-1)
-        sentence = sentences[rng_sentence].split(" ")
-        if len(sentence) > 3:  # take context into consideration
+        rng_sentence = random.randint(0, len(sentences) - length)
+        if length == 1:
+            sentence = sentences[rng_sentence]
+        else:
+            sentence = " ".join(sentences[rng_sentence: rng_sentence + length])
+        if len(sentence.split(" ")) > 3:  # take context into consideration
             break
 
     if "ALL" not in pos:
         nlp = spacy.load("en_core_web_sm")
-        doc = nlp(sentences[rng_sentence])
+        doc = nlp(sentence)
         tokens = [token.text_with_ws for token in doc]
-        tokens_with_pos = [(token.text, token.i) for token in doc if token.pos_ in pos]
+        tokens_with_pos = [
+            (token.text, token.i) for token in doc if token.pos_ in pos
+        ]
 
         try:
             selected_token = random.choice(tokens_with_pos)
@@ -72,17 +83,18 @@ def type_in_exercise(sentences: list, pos: list) -> tuple:
             return type_in_exercise(sentences, pos)
 
         # selected_token[0] is the token, selected_token[1] is index
-        begin = "".join(tokens[:selected_token[1]])
-        end = "".join(tokens[selected_token[1]+1:])
+        begin = "".join(tokens[: selected_token[1]])
+        end = "".join(tokens[selected_token[1] + 1:])
         correct_answer = selected_token[0]
 
     else:
-        rng = random.randint(1, len(sentence)-2)  # exclude 1st and last
-        correct_answer = sentence[rng]
-        correct_answer = re.sub(r"[^A-Za-z]", "", correct_answer)
+        sentence = sentence.split(" ")
+        rng = random.randint(1, len(sentence) - 2)  # exclude 1st and last
 
         begin = " ".join(sentence[:rng])
-        end = " ".join(sentence[rng+1:])
+        end = " ".join(sentence[rng + 1:])
+        correct_answer = sentence[rng]
+        correct_answer = re.sub(r"[^A-Za-z]", "", correct_answer)
 
     print(begin, end)
     return (correct_answer, begin, end)
@@ -90,9 +102,6 @@ def type_in_exercise(sentences: list, pos: list) -> tuple:
 
 if __name__ == "__main__":
     filepath = "/home/tmvfb/english-exercises-app/media/Little_Red_Cap__Jacob_and_Wilhelm_Grimm.txt"  # noqa: E501
-    kwargs = {
-        "username": "me",
-        "pos": "NOUN"
-    }
+    kwargs = {"username": "me", "pos": "NOUN"}
     prepare_exercises(filepath, **kwargs)
     # remove_data(filepath, **kwargs)
