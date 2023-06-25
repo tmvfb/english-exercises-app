@@ -7,7 +7,7 @@ from django.views.generic.base import TemplateView
 
 from text_processing.prepare_data import prepare_exercises
 
-from .forms import FileForm, FilterForm, TypeInExercise
+from .forms import FileForm, FilterForm, TypeInExercise, MultipleChoiceExercise
 from .models import File, Memory
 
 # from english_exercises_app.mixins import MessagesMixin
@@ -97,14 +97,20 @@ class ExerciseShowView(TemplateView):
 
         # prepare exercises and populate form fields
         data = prepare_exercises(filepath, **kwargs)
-        form = TypeInExercise(
-            initial={
-                "exercise_type": data["exercise_type"],
-                "correct_answer": data["correct_answer"],
-                "begin": data["sentence"][0],
-                "end": data["sentence"][1],
-            }
-        )
+        e_type = data["exercise_type"]
+        initial_data = {
+            "exercise_type": e_type,
+            "correct_answer": data["correct_answer"],
+            "begin": data["sentence"][0],
+            "end": data["sentence"][1],
+        }
+
+        if e_type == "type_in":
+            form = TypeInExercise(initial=initial_data)
+        elif e_type == "multiple_choice":
+            form = MultipleChoiceExercise(initial=initial_data)
+            form.fields["user_answer"].choices = data["options"]
+
         return render(
             request,
             "exercises/show.html",
@@ -125,6 +131,7 @@ class ExerciseShowView(TemplateView):
         if form.is_valid():
             correct_answer = form.cleaned_data["correct_answer"]
             user_answer = form.cleaned_data["user_answer"]
+            print(correct_answer, user_answer)
 
             form.save(user=user)
 

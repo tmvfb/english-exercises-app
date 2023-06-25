@@ -91,9 +91,9 @@ class FilterForm(forms.ModelForm):
     exercise_type = forms.ChoiceField(
         label=_("Exercise type"),
         choices=(
-            ("a", "All"),
-            ("m", "Multiple choice"),
-            ("t", "Type in"),
+            ("all_choices", "All"),
+            ("multiple_choice", "Multiple choice"),
+            ("type_in", "Type in"),
         ),
         widget=forms.Select(
             attrs={
@@ -152,3 +152,13 @@ class TypeInExercise(forms.ModelForm):
         if commit:
             instance.save()
         return instance
+
+
+class MultipleChoiceExercise(TypeInExercise):
+    user_answer = forms.ChoiceField(
+        widget=forms.Select(
+            attrs={
+                "class": "form-select",
+            }
+        ),
+    )

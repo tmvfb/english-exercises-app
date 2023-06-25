@@ -1,7 +1,7 @@
 import json
 import os
 import random
-# import gensim.downloader
+import gensim.downloader
 import spacy
 import spacy.cli
 from sentence_splitter import SentenceSplitter
@@ -10,6 +10,7 @@ if not os.getenv("DEBUG", "False"):  # don't download on dev server
     spacy.cli.download("en_core_web_sm")
 
 nlp = spacy.load("en_core_web_sm")
+model = gensim.downloader.load("glove-wiki-gigaword-100")
 
 
 def load_data(filepath: str, username: str) -> list:
@@ -49,10 +50,21 @@ def remove_data(filepath: str, username: str, **kwargs):
 
 def prepare_exercises(filepath: str, **kwargs) -> dict:
     sentences = load_data(filepath, str(kwargs.get("user")))
+    e_type = kwargs.get("exercise_type")
+    pos = kwargs.get("pos")
+    length = kwargs.get("length")
 
-    correct_answer, begin, end = type_in_exercise(
-        sentences, kwargs.get("pos"), kwargs.get("length")
-    )
+    if e_type == "all_choices":
+        e_type = random.choice(["type_in", "multiple_choice"])
+        kwargs["exercise_type"] = e_type
+
+    if e_type == "type_in":
+        correct_answer, begin, end = type_in_exercise(sentences, pos, length)
+    elif e_type == "multiple_choice":
+        correct_answer, begin, end, options = multiple_choice_exercise(
+            sentences, pos, length
+        )
+        kwargs["options"] = options
 
     kwargs["correct_answer"] = correct_answer
     kwargs["sentence"] = [begin, end]
@@ -69,7 +81,9 @@ def type_in_exercise(sentences: list, pos: list, length: int) -> tuple:
         if length == 1:
             sentence = sentences[rng_sentence]
         else:
-            sentence = " ".join(sentences[rng_sentence: rng_sentence + length])
+            sentence = " ".join(
+                sentences[rng_sentence: rng_sentence + length]
+            )
         if len(sentence.split(" ")) > 3:  # take context into consideration
             break
 
@@ -97,6 +111,27 @@ def type_in_exercise(sentences: list, pos: list, length: int) -> tuple:
 
     print(begin, end)
     return (correct_answer, begin, end)
+
+
+def multiple_choice_exercise(sentences: list, pos: list, length: int) -> tuple:
+    correct_answer, begin, end = type_in_exercise(sentences, pos, length)
+
+    synonyms = model.most_similar(correct_answer.lower().strip())
+    synonyms = [
+        synonym[0] for synonym in synonyms if synonym[0] not in ',.;:!?"'
+    ]
+
+    options = [(synonyms[i], synonyms[i]) for i in range(3)]
+    # for capitalized words
+    if correct_answer == correct_answer.capitalize():
+        options = [
+            (synonyms[i].capitalize(), synonyms[i].capitalize())
+            for i in range(3)
+        ]
+    options.append((correct_answer, correct_answer))
+    random.shuffle(options)
+
+    return (correct_answer, begin, end, options)
 
 
 if __name__ == "__main__":
