@@ -3,7 +3,7 @@ dev:
 	python3.8 manage.py runserver
 
 start:
-	poetry run gunicorn task_manager.wsgi
+	poetry run gunicorn english_exercises_app.wsgi --timeout 300
 
 # poetry commands for test
 install:

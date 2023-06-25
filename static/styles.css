@@ -22,16 +22,27 @@ body {
 [data-bs-theme=dark] .card-body {
   background-color: var(--bs-light-bg-subtle) !important;
 }
+[data-bs-theme=dark] .text-success {
+  color: #8bb9fe !important;
+}
 [data-bs-theme=dark] .btn-outline-success {
   --bs-btn-border-color: #6c757d;
   --bs-btn-color: #8bb9fe;
   --bs-btn-hover-bg: #8bb9fe;
+  --bs-btn-active-bg: #8bb9fe;
+  --bs-btn-active-border-color: #{rgba($white, .5)};
+}
+[data-bs-theme=dark] .btn.btn-outline-success:disabled {
+  color: #6c757d;
+  border-color: #8bb9fe;
 }
 [data-bs-theme=dark] .btn-success {
   --bs-btn-border-color: #6c757d;
   --bs-btn-color: var(--bs-light-bg-subtle);
   --bs-btn-bg: #8bb9fe;
   --bs-btn-hover-bg: #8bb9fe;
+  --bs-btn-active-bg: #8bb9fe;
+  --bs-btn-active-border-color: #{rgba($white, .5)};
 }
 [data-bs-theme=dark] .alert-success {
   --bs-alert-bg: #8bb9fe;
