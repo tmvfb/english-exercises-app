@@ -58,17 +58,19 @@
 	      <a class="nav-link" href="{% url 'exercise_upload' %}">{% translate 'Upload text' %}</a>
 	    </li>
 	    <li class="nav-item">
-	      <a class="nav-link" href="{% url 'exercise_create' %}">{% translate 'Create exercises' %}</a>
+	      <div class="nav-link">|</div>
+	    </li>
+	    <li class="nav-item">
+	      <a class="nav-link" href="{% url 'exercise_create' %}">{% translate 'Create new exercises' %}</a>
+	    </li>
+	    <li class="nav-item">
+	      <div class="nav-link">|</div>
+	    </li>
+	    <li class="nav-item">
+	      <a class="nav-link" href="{% url 'exercise_show' %}">{% translate 'Continue' %}</a>
 	    </li>
 	    {% endif %}
 	  </ul>
-
-	  {% if request.user.is_authenticated %}
-	  <form action="{% url 'home' %}" method="get" class="d-flex ms-lg-2 my-1">
-	    <input name="q" class="form-control me-sm-2" type="text" placeholder="{% translate 'Search' %}" aria-label="Search" value="{{ request.GET.q }}">
-	    <button class="btn btn-outline-success ms-1" type="submit">{% translate 'Search' %}</button>
-	  </form>
-	  {% endif %}
 
 	  <ul class="navbar-nav mr-0 ms-4">
 
@@ -97,6 +99,9 @@
 	    </li>
 	    {% endif %}
 	    {% if request.user.is_authenticated %}
+	    <li class="nav-item">
+	      <a class="nav-link" href="{% url 'exercise_stats' %}">{% translate 'Stats' %}</a>
+	    </li>
 	    <li class="nav-item">
 	      <a class="nav-link" href="{% url 'user_logout' %}">{% translate 'Logout' %}</a>
 	    </li>

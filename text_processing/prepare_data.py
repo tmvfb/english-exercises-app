@@ -6,9 +6,9 @@ import spacy
 import spacy.cli
 from sentence_splitter import SentenceSplitter
 
+model = gensim.downloader.load("glove-wiki-gigaword-100")
 spacy.cli.download("en_core_web_sm")
 nlp = spacy.load("en_core_web_sm")
-model = gensim.downloader.load("glove-wiki-gigaword-100")
 
 
 def load_data(filepath: str, username: str) -> list:

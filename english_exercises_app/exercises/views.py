@@ -8,7 +8,7 @@ from django.views.generic.base import TemplateView
 from text_processing.prepare_data import prepare_exercises
 
 from .forms import FileForm, FilterForm, TypeInExercise, MultipleChoiceExercise
-from .models import File, Memory
+from .models import File, Memory, Exercise
 
 # from english_exercises_app.mixins import MessagesMixin
 
@@ -81,12 +81,26 @@ class ExerciseShowView(TemplateView):
 
         # retrieve current params for exercise generation
         params = Memory.objects.filter(user=request.user).first()
+
+        # return user score if all exercise were completed
         if params.current_count == params.count:
+            subquery = Exercise.objects.filter(user=request.user).order_by(
+                "-pk"
+            )[: params.count]
+            query = (
+                Exercise.objects.filter(pk__in=subquery)
+                .order_by("pk")
+                .filter(flag=True)
+            )
+            score = query.count()
+
             messages.success(
-                request, _("You have completed all the exercises!")
+                request,
+                _(f"You have completed all the exercises! Your score: {score} / {params.count}"),  # noqa: E501
             )
             return redirect("exercise_create")
-        else:
+
+        elif request.GET.get("skip") != "true":
             params.current_count += 1
             params.save()
 
@@ -165,3 +179,41 @@ class ExerciseShowView(TemplateView):
                     "current_count": params.current_count,
                 },
             )
+
+
+class ExerciseStatsView(TemplateView):
+    """
+    Show exercise stats for the current user.
+    """
+
+    def get(self, request):
+        user_stats = Exercise.objects.filter(user=request.user).order_by(
+            "-pk"
+        )
+
+        subquery = user_stats[:100]
+        query_total = (
+            Exercise.objects.filter(pk__in=subquery)
+            .order_by("pk")
+            .count()
+        )
+        query_correct = (
+            Exercise.objects.filter(pk__in=subquery)
+            .order_by("pk")
+            .filter(flag=True)
+            .count()
+        )
+
+        total_count = user_stats.count()
+        correct_count = user_stats.filter(flag=True).count()
+        percentage_last_100 = f"{query_correct / query_total:.1%}"
+
+        return render(
+            request,
+            "exercises/stats.html",
+            {
+                "total_count": total_count,
+                "correct_answers": correct_count,
+                "percentage": percentage_last_100
+            },
+        )

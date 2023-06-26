@@ -43,7 +43,7 @@
               {% if button_status %}
                 <a href="{% url 'exercise_show' %}" class="btn btn-outline-info btn-md col-auto text-uppercase ms-3">{% translate 'Next' %}</a>
               {% else %}
-                <a href="{% url 'exercise_show' %}" class="btn btn-outline-secondary btn-md col-auto text-uppercase ms-3">{% translate 'Skip' %}</a>
+                <a href="{% url 'exercise_show' %}?skip=true" class="btn btn-outline-secondary btn-md col-auto text-uppercase ms-3">{% translate 'Skip' %}</a>
               {% endif %}
               <input {{ button_status }} class="btn btn-outline-success btn-md col-lg-3 col-md-3 col-sm-4 text-uppercase" type="submit" value="{% translate 'Check' %}">
             </div>

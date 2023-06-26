@@ -22,12 +22,12 @@
               {% for field in form %}
                 <tr>
                   <th class="align-middle">{{ field.label_tag|slice:":-9" }}</th>
-              <td>
-                {{ field }}
-                {% if field.name == "count" %}
-                  <label for="rangeInput" id="rangeValue" class="col-12 d-flex flex-row-reverse">{{ form.count.value }}</label>
-                {% endif %}
-              </td>
+                  <td>
+                    {{ field }}
+                    {% if field.name == "count" %}
+                      <label for="rangeInput" id="rangeValue" class="col-12 d-flex flex-row-reverse">{{ form.count.value }}</label>
+                    {% endif %}
+                  </td>
                 </tr>
               {% endfor %}
           </table>
