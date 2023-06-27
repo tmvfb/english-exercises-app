@@ -79,6 +79,7 @@ class FilterForm(forms.ModelForm):
             ("VERB", "Verbs"),
             ("NOUN", "Nouns"),
             ("ADJ", "Adjectives"),
+            ("DET", "Articles"),
         ),
         initial="ALL",
         widget=forms.CheckboxSelectMultiple(

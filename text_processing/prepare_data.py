@@ -1,14 +1,21 @@
 import json
 import os
+from dotenv import load_dotenv
 import random
 import gensim.downloader
 import spacy
+import lemminflect
 import spacy.cli
 from sentence_splitter import SentenceSplitter
 
-model = gensim.downloader.load("glove-wiki-gigaword-100")
-spacy.cli.download("en_core_web_sm")
+load_dotenv()
+dev = os.getenv("DEBUG", False)
+
+if not dev:  # speed up dev server deploy time
+    spacy.cli.download("en_core_web_sm")
+
 nlp = spacy.load("en_core_web_sm")
+model = gensim.downloader.load("glove-wiki-gigaword-100")
 
 
 def load_data(filepath: str, username: str) -> list:
@@ -24,7 +31,6 @@ def load_data(filepath: str, username: str) -> list:
     try:
         with open(path, "r") as file:
             sentences = json.load(file)
-
     except FileNotFoundError:
         with open(filepath, "r") as file:
             text = file.read()
@@ -79,9 +85,7 @@ def type_in_exercise(sentences: list, pos: list, length: int) -> tuple:
         if length == 1:
             sentence = sentences[rng_sentence]
         else:
-            sentence = " ".join(
-                sentences[rng_sentence: rng_sentence + length]
-            )
+            sentence = " ".join(sentences[rng_sentence : rng_sentence + length])
         if len(sentence.split(" ")) > 3:  # take context into consideration
             break
 
@@ -89,13 +93,11 @@ def type_in_exercise(sentences: list, pos: list, length: int) -> tuple:
     tokens = [token.text_with_ws for token in doc]
 
     if "ALL" not in pos:
-        selected_tokens = [
-            (token.text, token.i) for token in doc if token.pos_ in pos
-        ]
+        selected_tokens = [(token.text, token.i) for token in doc if token.pos_ in pos]
     else:
         selected_tokens = [
             (token.text, token.i) for token in doc if not token.is_punct
-        ][1: -1]  # slice 1st and last to remove undesired behaviour
+        ][1:-1]  # remove 1st and last to prevent undesired behaviour
 
     if selected_tokens:
         selected_token = random.choice(selected_tokens)
@@ -105,7 +107,7 @@ def type_in_exercise(sentences: list, pos: list, length: int) -> tuple:
 
     # selected_token[0] is the token, selected_token[1] is index
     begin = "".join(tokens[: selected_token[1]])
-    end = "".join(tokens[selected_token[1] + 1:])
+    end = "".join(tokens[selected_token[1] + 1 :])
     correct_answer = selected_token[0]
 
     print(begin, end)
@@ -116,17 +118,37 @@ def multiple_choice_exercise(sentences: list, pos: list, length: int) -> tuple:
     correct_answer, begin, end = type_in_exercise(sentences, pos, length)
 
     synonyms = model.most_similar(correct_answer.lower().strip())
-    synonyms = [
-        synonym[0] for synonym in synonyms if synonym[0] not in ',.;:!?"'
-    ]
 
-    options = [(synonyms[i], synonyms[i]) for i in range(3)]
+    # adding some customization
+    token = nlp(correct_answer.lower())[0]
+    pos_tag = token.pos_
+    if pos_tag == "VERB":
+        inflect_option = random.choice(["VBG", "VBN", "VBZ"])
+        option = token._.inflect(inflect_option)
+    elif pos_tag == "ADJ":
+        inflect_option = random.choice(["JJR", "JJS", "RB"])
+        option = token._.inflect(inflect_option)
+    else:
+        option = None
+
+    synonyms = [synonym[0] for synonym in synonyms if synonym[0] not in ',.;:!?"']
+    if option and option not in synonyms:
+        synonyms.insert(0, option)
+
+    if len(synonyms) > 5:
+        # options should contain tuples to correctly work with django forms
+        subsample = synonyms[:5]  # don't repeat options on same word
+        options = random.sample(subsample, 3)
+        options = list(zip(options, options))
+    else:
+        options = [(synonyms[i], synonyms[i]) for i in range(3)]
+
     # for capitalized words
     if correct_answer == correct_answer.capitalize():
         options = [
-            (synonyms[i].capitalize(), synonyms[i].capitalize())
-            for i in range(3)
+            (options[i][0].capitalize(), options[i][0].capitalize()) for i in range(3)
         ]
+
     options.append((correct_answer, correct_answer))
     random.shuffle(options)
 
@@ -135,6 +157,6 @@ def multiple_choice_exercise(sentences: list, pos: list, length: int) -> tuple:
 
 if __name__ == "__main__":
     filepath = "/home/tmvfb/english-exercises-app/media/Little_Red_Cap__Jacob_and_Wilhelm_Grimm.txt"  # noqa: E501
-    kwargs = {"username": "me", "pos": "NOUN", "length": 1}
+    kwargs = {"username": "me", "pos": "NOUN", "length": 1, "exercise_type": "type_in"}
     prepare_exercises(filepath, **kwargs)
     # remove_data(filepath, **kwargs)
