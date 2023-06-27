@@ -1,6 +1,5 @@
 # from django.urls import reverse
 from django.contrib import messages
-from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.utils.translation import gettext_lazy as _
 from django.views.generic.base import TemplateView
@@ -84,9 +83,9 @@ class ExerciseShowView(TemplateView):
 
         # return user score if all exercise were completed
         if params.current_count == params.count:
-            subquery = Exercise.objects.filter(user=request.user).order_by(
-                "-pk"
-            )[: params.count]
+            subquery = Exercise.objects.filter(user=request.user).order_by("-pk")[
+                : params.count
+            ]
             query = (
                 Exercise.objects.filter(pk__in=subquery)
                 .order_by("pk")
@@ -105,7 +104,7 @@ class ExerciseShowView(TemplateView):
             params.save()
 
         kwargs = {
-            field.name: getattr(params, field.name)
+            field.name: getattr(params, field.name)  # fmt: skip
             for field in params._meta.fields
         }
 
@@ -187,21 +186,12 @@ class ExerciseStatsView(TemplateView):
     """
 
     def get(self, request):
-        user_stats = Exercise.objects.filter(user=request.user).order_by(
-            "-pk"
-        )
+        user_stats = Exercise.objects.filter(user=request.user).order_by("-pk")
 
         subquery = user_stats[:100]
-        query_total = (
-            Exercise.objects.filter(pk__in=subquery)
-            .order_by("pk")
-            .count()
-        )
+        query_total = Exercise.objects.filter(pk__in=subquery).count()
         query_correct = (
-            Exercise.objects.filter(pk__in=subquery)
-            .order_by("pk")
-            .filter(flag=True)
-            .count()
+            Exercise.objects.filter(pk__in=subquery).filter(flag=True).count()
         )
 
         total_count = user_stats.count()
@@ -214,6 +204,6 @@ class ExerciseStatsView(TemplateView):
             {
                 "total_count": total_count,
                 "correct_answers": correct_count,
-                "percentage": percentage_last_100
+                "percentage": percentage_last_100,
             },
         )
