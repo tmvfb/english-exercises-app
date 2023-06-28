@@ -6,8 +6,8 @@ from django.views.generic.base import TemplateView
 
 from text_processing.prepare_data import prepare_exercises
 
-from .forms import FileForm, FilterForm, TypeInExercise, MultipleChoiceExercise
-from .models import File, Memory, Exercise
+from .forms import FileForm, FilterForm, MultipleChoiceExercise, TypeInExercise
+from .models import Exercise, File, Memory
 
 # from english_exercises_app.mixins import MessagesMixin
 
@@ -59,7 +59,7 @@ class ExerciseCreateView(TemplateView):
             return redirect("exercise_show")
 
         else:
-            messages.error(request, _("Please select all the parameters"))
+            messages.error(request, _("Please select valid parameters"))
             return redirect("exercise_create")
 
 

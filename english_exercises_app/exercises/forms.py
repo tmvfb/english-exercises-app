@@ -93,9 +93,9 @@ class FilterForm(forms.ModelForm):
         label=_("Exercise type"),
         choices=(
             ("all_choices", "All"),
-            ("multiple_choice", "Multiple choice"),
             ("type_in", "Type in"),
-            ("word_order", "Word order"),
+            ("multiple_choice", "Multiple choice"),
+            ("word_order", "Complete sentence"),
         ),
         widget=forms.Select(
             attrs={
@@ -114,7 +114,7 @@ class FilterForm(forms.ModelForm):
         max_value=5,
         min_value=3,
         initial=3,
-        label=_("Skipped words (word order exercises only)"),
+        label=_("Skipped words (complete sentence exercises only)"),
         widget=forms.NumberInput(attrs={"class": "form-control"}),
     )
 

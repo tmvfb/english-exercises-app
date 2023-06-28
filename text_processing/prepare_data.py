@@ -1,11 +1,12 @@
 import json
 import os
-from dotenv import load_dotenv
 import random
+
 import gensim.downloader
-import spacy
 import lemminflect
+import spacy
 import spacy.cli
+from dotenv import load_dotenv
 from sentence_splitter import SentenceSplitter
 
 load_dotenv()
@@ -16,6 +17,10 @@ if not dev:  # speed up dev server deploy time
 
 nlp = spacy.load("en_core_web_sm")
 model = gensim.downloader.load("glove-wiki-gigaword-100")
+
+
+NUM_SYNONYMS = 5  # [3, 10] - defines quality of synonyms for multichoice
+NUM_OPTIONS = 3  # number of options for multichoice exercises, <= SYN_COUNT
 
 
 def load_data(filepath: str, username: str) -> list:
@@ -53,13 +58,17 @@ def remove_data(filepath: str, username: str, **kwargs):
 
 
 def prepare_exercises(filepath: str, **kwargs) -> dict:
+    """
+    Dispatcher function to call corresponding exercise generator.
+    """
+
     sentences = load_data(filepath, str(kwargs.get("user")))
     e_type = kwargs.get("exercise_type")
     pos = kwargs.get("pos")
     length = kwargs.get("length")
 
     if e_type == "all_choices":
-        e_type = random.choice(["type_in", "multiple_choice"])
+        e_type = random.choice(["type_in", "multiple_choice", "word_order"])
         kwargs["exercise_type"] = e_type
 
     if e_type == "type_in":
@@ -141,7 +150,7 @@ def type_in_exercise(
                 token
                 for token in tokens[selected_token[1] : selected_token[1] + skip_length]
             ]
-        )
+        ).strip()
 
     print(begin, end)
     print(correct_answer)
@@ -169,13 +178,13 @@ def multiple_choice_exercise(sentences: list, pos: list, length: int) -> tuple:
     if option and option not in synonyms:
         synonyms.insert(0, option)
 
-    if len(synonyms) > 5:
+    if len(synonyms) > NUM_SYNONYMS:
         # options should contain tuples to correctly work with django forms
-        subsample = synonyms[:5]  # don't repeat options on same word
-        options = random.sample(subsample, 3)
+        subsample = synonyms[:NUM_SYNONYMS]  # don't repeat options on same word
+        options = random.sample(subsample, NUM_OPTIONS)
         options = list(zip(options, options))
     else:
-        options = [(synonyms[i], synonyms[i]) for i in range(3)]
+        options = [(synonyms[i], synonyms[i]) for i in range(NUM_OPTIONS)]
 
     # for capitalized words
     if correct_answer == correct_answer.capitalize():
@@ -193,22 +202,78 @@ def word_order_exercise(
     sentences: list, pos: list, length: int, skip_length: int
 ) -> tuple:
     correct_answer, begin, end = type_in_exercise(sentences, pos, length, skip_length)
-
-    answer = nlp(correct_answer.strip())
+    answer = nlp(correct_answer)
     split = [token for token in answer]
+
     # get rid of exercises with punctuation marks
-    if any([x.is_punct for x in split]):
+    # just in case checking length
+    if any([x.is_punct for x in split]) or len(split) < 3:
         return word_order_exercise(sentences, pos, length, skip_length)
 
-    options = [correct_answer]
-    while len(options) != 3 and len(options) != len(split):
+    options = []
+
+    # create the same string with one removed article/aux verb
+    aux_ind = [i for i in range(len(split)) if split[i].pos_ in ["AUX", "DET"]]
+    if aux_ind:
+        split_copy = split[:]
+        split_copy.pop(random.choice(aux_ind))
+        joined = " ".join([token.text for token in split_copy]).strip()
+        options.append(joined)  # len = 0-1
+
+    # create the same string with one inflected verb/adjective
+    inflection_dict = {
+        "VERB": ["VBG", "VBN", "VBZ"],
+        "ADJ": ["JJR", "JJS", "RB"]
+    }
+    for pos, inflection_options in inflection_dict.items():
+        aux_ind = [i for i in range(len(split)) if split[i].pos_ == pos]
+        if aux_ind:
+            split_copy = split[:]
+            inflect_option = random.choice(inflection_options)
+            i = random.choice(aux_ind)
+            option = split_copy[i]._.inflect(inflect_option)
+            split_copy.insert(i, option)
+            split_copy = split_copy[: i + 1] + split_copy[i + 2 :]
+            joined = " ".join(
+                [
+                    token.text if not isinstance(token, str) else token
+                    for token in split_copy
+                ]
+            ).strip()
+            options.append(joined)  # len = 0-2
+
+    # replace a word with synonym
+        split_copy = split[:]
+        i = random.choice(range(len(split_copy)))
+        word = split_copy[i].text.lower()
+        syn_rank = random.choice(range(NUM_SYNONYMS))
+        synonym = model.most_similar(word)[syn_rank][0]
+        if word != split_copy[i].text:  # capitalized words
+            synonym = synonym.capitalize()
+        split_copy.insert(i, synonym)
+        split_copy = split_copy[: i + 1] + split_copy[i + 2 :]
+        joined = " ".join(
+            [
+                token.text if not isinstance(token, str) else token
+                for token in split_copy
+            ]
+        ).strip()
+        options.append(joined)  # len = 1-3
+
+    # shuffle word order
+    count = 0  # adding 2 sentences with incorrect order
+    while count < NUM_OPTIONS - 1:
         random.shuffle(split)
         joined = " ".join([token.text for token in split]).strip()
         if joined not in options:
-            options.append(joined)
+            options.append(joined)  # len = 3-5, i.e. [NUM_OPTIONS, NUM_OPTIONS+2]
+            count += 1
         print(options)
 
-    options = list(zip(options, options))
+    options = random.sample(options, NUM_OPTIONS)
+    options.append(correct_answer)
+    options = set(options)
+    options = list(zip(options, options))  # format to work with django forms
     print(options)
     return (correct_answer, begin, end, options)
 
