@@ -95,6 +95,7 @@ class FilterForm(forms.ModelForm):
             ("all_choices", "All"),
             ("multiple_choice", "Multiple choice"),
             ("type_in", "Type in"),
+            ("word_order", "Word order"),
         ),
         widget=forms.Select(
             attrs={
@@ -106,13 +107,20 @@ class FilterForm(forms.ModelForm):
         max_value=10,
         min_value=1,
         initial=1,
-        label=_("Sentences per exercise"),
+        label=_("Context length"),
+        widget=forms.NumberInput(attrs={"class": "form-control"}),
+    )
+    skip_length = forms.IntegerField(
+        max_value=5,
+        min_value=3,
+        initial=3,
+        label=_("Skipped words (word order exercises only)"),
         widget=forms.NumberInput(attrs={"class": "form-control"}),
     )
 
     class Meta:
         model = Memory
-        fields = ["count", "pos", "exercise_type", "length"]
+        fields = ["count", "pos", "exercise_type", "length", "skip_length"]
 
     def save(self, user, commit=True):
         # delete previous entry, if exists
@@ -127,8 +135,11 @@ class FilterForm(forms.ModelForm):
         return instance
 
 
-# let's have one form per every exercise
 class TypeInExercise(forms.ModelForm):
+    """
+    Base form for all types of exercises.
+    """
+
     begin = forms.CharField(
         max_length=1023,
         widget=forms.HiddenInput(),
@@ -156,6 +167,10 @@ class TypeInExercise(forms.ModelForm):
 
 
 class MultipleChoiceExercise(TypeInExercise):
+    """
+    Used for both multiple choice and word order exercises.
+    """
+
     user_answer = forms.ChoiceField(
         widget=forms.Select(
             attrs={

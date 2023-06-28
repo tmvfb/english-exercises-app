@@ -72,6 +72,7 @@ class Memory(models.Model):
 
     exercise_type = models.CharField(max_length=255)
     length = models.IntegerField()
+    skip_length = models.IntegerField()
 
     @classmethod
     def get_current_count(cls):

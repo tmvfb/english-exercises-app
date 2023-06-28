@@ -120,8 +120,9 @@ class ExerciseShowView(TemplateView):
 
         if e_type == "type_in":
             form = TypeInExercise(initial=initial_data)
-        elif e_type == "multiple_choice":
+        elif e_type == "multiple_choice" or "word_order":
             form = MultipleChoiceExercise(initial=initial_data)
+            print(data["options"])
             form.fields["user_answer"].choices = data["options"]
 
         return render(

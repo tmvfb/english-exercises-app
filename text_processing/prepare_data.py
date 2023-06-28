@@ -69,6 +69,12 @@ def prepare_exercises(filepath: str, **kwargs) -> dict:
             sentences, pos, length
         )
         kwargs["options"] = options
+    elif e_type == "word_order":
+        skip_length = kwargs.get("skip_length", 3)
+        correct_answer, begin, end, options = word_order_exercise(
+            sentences, pos, length, skip_length
+        )
+        kwargs["options"] = options
 
     kwargs["correct_answer"] = correct_answer
     kwargs["sentence"] = [begin, end]
@@ -76,7 +82,14 @@ def prepare_exercises(filepath: str, **kwargs) -> dict:
     return kwargs
 
 
-def type_in_exercise(sentences: list, pos: list, length: int) -> tuple:
+def type_in_exercise(
+    sentences: list, pos: list, length: int, skip_length: int = 1
+) -> tuple:
+    """
+    Base function for other exercises.
+    Skip length is the count of skipped words.
+    """
+
     if len(sentences) < length:
         raise Exception("Provided text is too short.")
 
@@ -93,24 +106,45 @@ def type_in_exercise(sentences: list, pos: list, length: int) -> tuple:
     tokens = [token.text_with_ws for token in doc]
 
     if "ALL" not in pos:
-        selected_tokens = [(token.text, token.i) for token in doc if token.pos_ in pos]
-    else:
+        selected_tokens = [
+            (token.text, token.i) for token in doc if token.pos_ in pos and token.i > 0
+        ]
+        if skip_length > 1:
+            # remove tokens at the beginning and end of sentence
+            selected_tokens = list(
+                filter(lambda x: x[1] <= len(tokens) - skip_length, selected_tokens)
+            )
+    # restrict to get slice correctly
+    elif len(tokens) > 2 * skip_length:
         selected_tokens = [
             (token.text, token.i) for token in doc if not token.is_punct
-        ][1:-1]  # remove 1st and last to prevent undesired behaviour
+        ][
+            1:-skip_length
+        ]  # by default remove 1st and last to prevent undesired behaviour
+    else:
+        return type_in_exercise(sentences, pos, length, skip_length)
 
     if selected_tokens:
         selected_token = random.choice(selected_tokens)
     # in case sentence doesn't contain desired pos
     else:
-        return type_in_exercise(sentences, pos, length)
+        return type_in_exercise(sentences, pos, length, skip_length)
 
     # selected_token[0] is the token, selected_token[1] is index
     begin = "".join(tokens[: selected_token[1]])
-    end = "".join(tokens[selected_token[1] + 1 :])
+    end = "".join(tokens[selected_token[1] + skip_length :])
     correct_answer = selected_token[0]
 
+    if skip_length > 1:
+        correct_answer = "".join(
+            [
+                token
+                for token in tokens[selected_token[1] : selected_token[1] + skip_length]
+            ]
+        )
+
     print(begin, end)
+    print(correct_answer)
     return (correct_answer, begin, end)
 
 
@@ -122,14 +156,14 @@ def multiple_choice_exercise(sentences: list, pos: list, length: int) -> tuple:
     # adding some customization
     token = nlp(correct_answer.lower())[0]
     pos_tag = token.pos_
+    option = None
+
     if pos_tag == "VERB":
         inflect_option = random.choice(["VBG", "VBN", "VBZ"])
         option = token._.inflect(inflect_option)
     elif pos_tag == "ADJ":
         inflect_option = random.choice(["JJR", "JJS", "RB"])
         option = token._.inflect(inflect_option)
-    else:
-        option = None
 
     synonyms = [synonym[0] for synonym in synonyms if synonym[0] not in ',.;:!?"']
     if option and option not in synonyms:
@@ -155,8 +189,38 @@ def multiple_choice_exercise(sentences: list, pos: list, length: int) -> tuple:
     return (correct_answer, begin, end, options)
 
 
+def word_order_exercise(
+    sentences: list, pos: list, length: int, skip_length: int
+) -> tuple:
+    correct_answer, begin, end = type_in_exercise(sentences, pos, length, skip_length)
+
+    answer = nlp(correct_answer.strip())
+    split = [token for token in answer]
+    # get rid of exercises with punctuation marks
+    if any([x.is_punct for x in split]):
+        return word_order_exercise(sentences, pos, length, skip_length)
+
+    options = [correct_answer]
+    while len(options) != 3 and len(options) != len(split):
+        random.shuffle(split)
+        joined = " ".join([token.text for token in split]).strip()
+        if joined not in options:
+            options.append(joined)
+        print(options)
+
+    options = list(zip(options, options))
+    print(options)
+    return (correct_answer, begin, end, options)
+
+
 if __name__ == "__main__":
     filepath = "/home/tmvfb/english-exercises-app/media/Little_Red_Cap__Jacob_and_Wilhelm_Grimm.txt"  # noqa: E501
-    kwargs = {"username": "me", "pos": "NOUN", "length": 1, "exercise_type": "type_in"}
+    kwargs = {
+        "username": "me",
+        "pos": "NOUN",
+        "length": 1,
+        "exercise_type": "word_order_exercise",
+        "skip_length": 3,
+    }
     prepare_exercises(filepath, **kwargs)
     # remove_data(filepath, **kwargs)
