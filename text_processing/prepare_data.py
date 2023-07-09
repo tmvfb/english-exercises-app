@@ -24,7 +24,7 @@ NUM_SYNONYMS = 5  # [3, 10] - defines quality of synonyms for multichoice
 NUM_OPTIONS = 3  # number of options for multichoice exercises, <= SYN_COUNT
 inflection_dict = {  # options for inflecting pos
     "VERB": ["VBG", "VBN", "VBZ"],
-    "ADJ": ["JJR", "JJS", "RB"]
+    "ADJ": ["JJR", "JJS", "RB"],
 }
 
 
@@ -103,7 +103,11 @@ def prepare_exercises(filepath: str, **kwargs) -> dict:
 
 
 def type_in_exercise(
-    sentences: list, pos: list, length: int, skip_length: int = 1, multiple_skips: bool = False
+    sentences: list,
+    pos: list,
+    length: int,
+    skip_length: int = 1,
+    multiple_skips: bool = False,
 ) -> tuple:
     """
     Base function for other exercises.
@@ -119,7 +123,7 @@ def type_in_exercise(
         if length == 1:
             sentence = sentences[rng_sentence]
         else:
-            sentence = " ".join(sentences[rng_sentence: rng_sentence + length])
+            sentence = " ".join(sentences[rng_sentence : rng_sentence + length])
         if len(sentence.split(" ")) > 3:  # take context into consideration
             break
 
@@ -148,7 +152,7 @@ def type_in_exercise(
         selected_token = random.choice(selected_tokens)
         # selected_token[0] is the token, selected_token[1] is its index
         begin = "".join(tokens[: selected_token[1]])
-        end = "".join(tokens[selected_token[1] + skip_length:])
+        end = "".join(tokens[selected_token[1] + skip_length :])
         correct_answer = selected_token[0]
 
         # correct answer should be string
@@ -156,7 +160,9 @@ def type_in_exercise(
             correct_answer = "".join(
                 [
                     token
-                    for token in tokens[selected_token[1]: selected_token[1] + skip_length]
+                    for token in tokens[
+                        selected_token[1] : selected_token[1] + skip_length
+                    ]
                 ]
             ).strip()
 
@@ -170,8 +176,8 @@ def type_in_exercise(
         correct_answer = []
         for idx in range(len(selected_tokens)):
             position = selected_tokens[idx][1]
-            tokens.insert(position, f". . . {idx + 1} . . .  ")
-            correct_answer.append(tokens.pop(position+1).strip())
+            tokens.insert(position, ". . .")
+            correct_answer.append(tokens.pop(position + 1).strip())
 
         return (correct_answer, tokens)
 
@@ -251,7 +257,7 @@ def word_order_exercise(
             i = random.choice(aux_ind)
             option = split_copy[i]._.inflect(inflection_option)
             split_copy.insert(i, option)
-            split_copy = split_copy[: i + 1] + split_copy[i + 2:]
+            split_copy = split_copy[: i + 1] + split_copy[i + 2 :]
             joined = " ".join(
                 [
                     token.text if not isinstance(token, str) else token
@@ -260,7 +266,7 @@ def word_order_exercise(
             ).strip()
             options.append(joined)  # len = 0-2
 
-    # replace a word with synonym
+        # replace a word with synonym
         split_copy = split[:]
         i = random.choice(range(len(split_copy)))
         word = split_copy[i].text.lower()
@@ -269,7 +275,7 @@ def word_order_exercise(
         if word != split_copy[i].text:  # capitalized words
             synonym = synonym.capitalize()
         split_copy.insert(i, synonym)
-        split_copy = split_copy[: i + 1] + split_copy[i + 2:]
+        split_copy = split_copy[: i + 1] + split_copy[i + 2 :]
         joined = " ".join(
             [
                 token.text if not isinstance(token, str) else token
@@ -296,9 +302,7 @@ def word_order_exercise(
     return (correct_answer, begin, end, options)
 
 
-def blanks_exercise(
-    sentences: list, pos: list, length: int, skip_length: int
-) -> tuple:
+def blanks_exercise(sentences: list, pos: list, length: int, skip_length: int) -> tuple:
     # getting a sequence of sentences with correct length
     # performing all necessary length checks
     correct_answer, sentence = type_in_exercise(
@@ -307,9 +311,7 @@ def blanks_exercise(
     correct_answer = ", ".join(correct_answer)
     begin = "".join(sentence)
     end = ""
-    o_1 = correct_answer + " sas"
-    o_2 = correct_answer + " sos"
-    options = ((o_1, o_1), (o_2, o_2), (correct_answer, correct_answer))
+    options = correct_answer
     return (correct_answer, begin, end, options)
 
 

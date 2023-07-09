@@ -16,45 +16,76 @@
           <div class="form-group">
             {% csrf_token %}
 
-            <table class="table table-hover table-borderless" required>
-              <tr>
-		<td class="row">
-                  <div class="align-items-center">
-                    {{ form.begin.value }}
-                    {% if form.exercise_type.value != "blanks" %}
-                      <span class="p-2 col-auto d-inline-flex">
-                        {{ form.user_answer }}
-                      </span>
-                      {% if correct_answer %}
-                        <span class="text-secondary fw-lighter me-2">(<span class="text-success fw-bold">{{ correct_answer }}</span>)</span>
-                      {% endif %}
-                      {{ form.end.value }}
-                    {% endif %}
-                  </div>
-		</td>
-              </tr>
-            </table>
+            {% if form.exercise_type.value != "blanks" %}
+              <table class="table table-hover table-borderless" required>
+                <tr>
+                  <td class="row">
+                    <div class="align-items-center">
+                        {{ form.begin.value }}
+                        <span class="p-2 col-auto d-inline-flex">
+                          {{ form.user_answer }}
+                        </span>
+                        {% if correct_answer %}
+                          <span class="text-secondary fw-lighter me-2">(<span class="text-success fw-bold">{{ correct_answer }}</span>)</span>
+                        {% endif %}
+                        {{ form.end.value }}
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            {% endif %}
 
-            {% if form.exercise_type.value == "blanks" %}
-              <div>
-                {{ form.user_answer }}
-                {% if correct_answer %}
-                  <span class="text-secondary fw-lighter me-2">(<span class="text-success fw-bold">{{ correct_answer }}</span>)</span>
+	    {% if form.exercise_type.value == "blanks" %}
+              <input type="hidden" id="id_user_answer" name="user_answer" value=""></input>
+
+              <!-- render text -->
+              <div class="row">
+                <div class="align-items-center mb-2">
+                {% for item in form.begin.value|split:". . ." %}
+                {{ item }}
+                {% if not forloop.last %}
+                <div class="content-task d-inline-flex col-auto justify-content-center">
+                  <ul class="questions text-justify">
+                    <li class="dropzone custom-number-{{ forloop.counter0 }}"><span class="word-empty">{{ forloop.counter }}</span></li>
+                  </ul>
+                </div>
                 {% endif %}
+                {% endfor %}
+                </div>
               </div>
+
+            <!-- show draggable answers -->
+            {% if form.answers.value %}
+              <div class="content-task my-3">
+                <ul class="answers">
+                  {% for option in form.answers.value|split:", " %}
+                  <li class="dropzone"><span class="btn btn-outline-dark word-fill" data="{{ forloop.counter0 }}" draggable="true">{{ option}}</span></li>
+                  {% endfor %}
+                </ul>
+              </div>
+              {% endif %}
+
+            <!-- show correct answers after post request -->
+              {% if correct_answer %}
+                <div class="p-2 col-auto mt-3">
+                  {% translate "Your answers:" %} {{ form.user_answer.value }}
+                </div>
+                <div class="text-secondary fw-lighter p-2 col-auto">{% translate "Correct answers:" %} <span class="text-success fw-bold">{{ correct_answer }}</span></div>
+              {% endif %}
+
             {% endif %}
 
             {% for field in form %}
-              {% if field.name != "user_answer" %}
+              {% if field.name != "user_answer" and field.name != "answers" %}
                 <input type="hidden">{{ field }}</input>
               {% endif %}
             {% endfor %}
 
             <div class="col-12 d-flex flex-row-reverse">
               {% if button_status %}
-                <a href="{% url 'exercise_show' %}" class="btn btn-outline-info btn-md col-auto text-uppercase ms-3">{% translate 'Next' %}</a>
+                <a href="{% url 'exercise_show' %}?next=true" class="btn btn-outline-info btn-md col-auto text-uppercase ms-3">{% translate 'Next' %}</a>
               {% else %}
-                <a href="{% url 'exercise_show' %}?skip=true" class="btn btn-outline-secondary btn-md col-auto text-uppercase ms-3">{% translate 'Skip' %}</a>
+                <a href="{% url 'exercise_show' %}" class="btn btn-outline-secondary btn-md col-auto text-uppercase ms-3">{% translate 'Skip' %}</a>
               {% endif %}
               <input {{ button_status }} class="btn btn-outline-success btn-md col-lg-3 col-md-3 col-sm-4 text-uppercase" type="submit" value="{% translate 'Check' %}">
             </div>
@@ -66,5 +97,115 @@
     </div>
 
   </div>
+
+
+<style>
+  .content-task ul {
+    height: 1.5em;
+    padding-left: 0em;
+  }
+  .content-task ul li {
+    list-style-type: none;
+    display: inline-block;
+    min-height: 2em;
+    min-width: 5em;
+    text-align: center;
+  }
+  .content-task ul li span {
+    display: inline-block;
+    cursor: pointer !important;
+  }
+  .content-task ul li span[draggable=true] {
+    cursor: grab !important;
+  }
+  .content-task ul li span[draggable=true]:active {
+    cursor: grabbing !important;
+  }
+  .content-task ul li span.word-empty {
+    border-bottom: 1px solid #000;
+    min-width: 0.5em;
+  }
+</style>
+
+
+<script>
+  // drag and drop
+
+  var listOfStrings = [];
+  const classToIndexMap = {
+      "custom-number-0": 0,
+      "custom-number-1": 1,
+      "custom-number-2": 2,
+      "custom-number-3": 3,
+      "custom-number-4": 4
+  };
+
+  let dragged;
+  document.addEventListener(
+    "dragstart",
+    function (e) {
+      dragged = e.target;
+      e.dataTransfer.setData("text", null);
+    },
+    false
+  );
+  document.querySelectorAll(".dropzone").forEach((el) =>
+    el.addEventListener(
+      "dragover",
+      function (e) {
+        e.preventDefault();
+      },
+      false
+    )
+  );
+  document.addEventListener(
+    "dragenter",
+    function (e) {
+      if (e.target.classList.contains("dropzone")) {
+        e.target.style.border = "2px dashed #ccc";
+      }
+    },
+    false
+  );
+  document.addEventListener(
+    "dragleave",
+    function (e) {
+      if (e.target.classList.contains("dropzone")) {
+        e.target.style.border = "";
+      }
+    },
+    false
+  );
+  document.addEventListener(
+    "drop",
+    function (e) {
+      e.preventDefault();
+      if (e.target.classList.contains("dropzone")) {
+        dragged.parentElement.removeChild(dragged);
+        e.target.firstChild && e.target.removeChild(e.target.firstChild);
+        e.target.appendChild(dragged);
+        e.target.style.border = "";
+
+        // remembering user input
+        var draggedText = dragged.textContent;
+        var userAnswerField = document.getElementById("id_user_answer");
+        var dropTargetClass = e.target.classList;
+
+        for (var i = 0; i < dropTargetClass.length; i++) {
+          if (dropTargetClass[i].startsWith("custom-number-")) {
+            dropBoxClass = dropTargetClass[i];
+            dropBoxNumber = classToIndexMap[dropBoxClass]
+            break;
+          }
+        }
+        listOfStrings[dropBoxNumber] = draggedText;
+        var concatenatedString = listOfStrings.join(", ");
+
+        userAnswerField.value = concatenatedString;
+      }
+    },
+    false
+  );
+</script>
 
 {% endblock %}

@@ -142,11 +142,11 @@ class TypeInExercise(forms.ModelForm):
     """
 
     begin = forms.CharField(
-        max_length=1023,
+        max_length=4095,
         widget=forms.HiddenInput(),
     )
     end = forms.CharField(
-        max_length=1023,
+        max_length=2047,
         widget=forms.HiddenInput(),
         required=False
     )
@@ -187,11 +187,15 @@ class BlanksExercise(TypeInExercise):
     Used for both multiple choice and word order exercises.
     """
 
-    user_answer = forms.ChoiceField(
-        widget=forms.RadioSelect(
-            attrs={
-                "class": "form-check-label",
-                "type": "radio",
-            }
-        ),
+    user_answer = forms.CharField(
+        widget=forms.HiddenInput(),
+        # widget=forms.RadioSelect(
+        #     attrs={
+        #         "class": "form-check-label",
+        #         "type": "radio",
+        #     }
+        # ),
+    )
+    answers = forms.CharField(
+        widget=forms.HiddenInput(),
     )

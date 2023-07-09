@@ -64,7 +64,7 @@ class Memory(models.Model):
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE
     )
-    current_count = models.IntegerField(default=0)
+    current_count = models.IntegerField(default=1)
     count = models.IntegerField()
 
     # this limits possible db options to postgres

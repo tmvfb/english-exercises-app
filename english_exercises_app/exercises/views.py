@@ -1,15 +1,27 @@
 # from django.urls import reverse
 from django.contrib import messages
 from django.shortcuts import redirect, render
+from django.template.defaulttags import register
 from django.utils.translation import gettext_lazy as _
 from django.views.generic.base import TemplateView
 
 from text_processing.prepare_data import prepare_exercises
 
-from .forms import FileForm, FilterForm, MultipleChoiceExercise, TypeInExercise, BlanksExercise
+from .forms import (
+    BlanksExercise,
+    FileForm,
+    FilterForm,
+    MultipleChoiceExercise,
+    TypeInExercise,
+)
 from .models import Exercise, File, Memory
 
 # from english_exercises_app.mixins import MessagesMixin
+
+
+@register.filter(name="split")
+def split(value, key):
+    return value.split(key)
 
 
 class ExerciseUploadView(TemplateView):
@@ -95,11 +107,13 @@ class ExerciseShowView(TemplateView):
 
             messages.success(
                 request,
-                _(f"You have completed all the exercises! Your score: {score} / {params.count}"),  # noqa: E501
+                _(
+                    f"You have completed all the exercises! Your score: {score} / {params.count}"   # noqa: E501
+                ),
             )
             return redirect("exercise_create")
 
-        elif request.GET.get("skip") != "true":
+        elif request.GET.get("next") == "true":
             params.current_count += 1
             params.save()
 
@@ -125,7 +139,7 @@ class ExerciseShowView(TemplateView):
             form.fields["user_answer"].choices = data["options"]
         elif e_type == "blanks":
             form = BlanksExercise(initial=initial_data)
-            form.fields["user_answer"].choices = data["options"]
+            form.fields["answers"].initial = data["options"]
 
         return render(
             request,
@@ -154,10 +168,12 @@ class ExerciseShowView(TemplateView):
             form.save(user=user)
 
             if user_answer == correct_answer:
-                correct = True
+                hide_correct = True
                 messages.success(request, _("Correct!"))
+                if form.cleaned_data["exercise_type"] == "blanks":
+                    hide_correct = False
             else:
-                correct = False
+                hide_correct = False
                 messages.error(request, _("Sorry, your answer is incorrect"))
 
             return render(
@@ -166,7 +182,7 @@ class ExerciseShowView(TemplateView):
                 {
                     "form": form,
                     "button_status": "disabled",
-                    "correct_answer": correct_answer if not correct else None,
+                    "correct_answer": correct_answer if not hide_correct else None,
                     "count": params.count,
                     "current_count": params.current_count,
                 },
