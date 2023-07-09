@@ -8,7 +8,7 @@
     <div class="card" >
 
       <div class="card-header bg-secondary text-white">
-        <h2>{% translate 'Exercise' %} # {{ current_count}} / {{ count }}</h2>
+        <h2>{% translate 'Exercise' %} # {{ current_count }} / {{ count }}</h2>
       </div>
 
       <div class="card-body bg-light">
@@ -21,17 +21,28 @@
 		<td class="row">
                   <div class="align-items-center">
                     {{ form.begin.value }}
-                    <span class="p-2 col-auto d-inline-flex">
-                      {{ form.user_answer }}
-                    </span>
-                    {% if correct_answer %}
-                      <span class="text-secondary fw-lighter me-2">(<span class="text-success fw-bold">{{ correct_answer }}</span>)</span>
+                    {% if form.exercise_type.value != "blanks" %}
+                      <span class="p-2 col-auto d-inline-flex">
+                        {{ form.user_answer }}
+                      </span>
+                      {% if correct_answer %}
+                        <span class="text-secondary fw-lighter me-2">(<span class="text-success fw-bold">{{ correct_answer }}</span>)</span>
+                      {% endif %}
+                      {{ form.end.value }}
                     {% endif %}
-                    {{ form.end.value }}
                   </div>
 		</td>
               </tr>
             </table>
+
+            {% if form.exercise_type.value == "blanks" %}
+              <div>
+                {{ form.user_answer }}
+                {% if correct_answer %}
+                  <span class="text-secondary fw-lighter me-2">(<span class="text-success fw-bold">{{ correct_answer }}</span>)</span>
+                {% endif %}
+              </div>
+            {% endif %}
 
             {% for field in form %}
               {% if field.name != "user_answer" %}

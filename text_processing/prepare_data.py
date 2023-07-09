@@ -16,11 +16,16 @@ if not dev:  # speed up dev server deploy time
     spacy.cli.download("en_core_web_sm")
 
 nlp = spacy.load("en_core_web_sm")
+model = ""
 model = gensim.downloader.load("glove-wiki-gigaword-100")
 
 
 NUM_SYNONYMS = 5  # [3, 10] - defines quality of synonyms for multichoice
 NUM_OPTIONS = 3  # number of options for multichoice exercises, <= SYN_COUNT
+inflection_dict = {  # options for inflecting pos
+    "VERB": ["VBG", "VBN", "VBZ"],
+    "ADJ": ["JJR", "JJS", "RB"]
+}
 
 
 def load_data(filepath: str, username: str) -> list:
@@ -68,7 +73,7 @@ def prepare_exercises(filepath: str, **kwargs) -> dict:
     length = kwargs.get("length")
 
     if e_type == "all_choices":
-        e_type = random.choice(["type_in", "multiple_choice", "word_order"])
+        e_type = random.choice(["type_in", "multiple_choice", "word_order", "blanks"])
         kwargs["exercise_type"] = e_type
 
     if e_type == "type_in":
@@ -84,6 +89,12 @@ def prepare_exercises(filepath: str, **kwargs) -> dict:
             sentences, pos, length, skip_length
         )
         kwargs["options"] = options
+    elif e_type == "blanks":
+        skip_length = kwargs.get("skip_length", 3)
+        correct_answer, begin, end, options = blanks_exercise(
+            sentences, pos, length, skip_length
+        )
+        kwargs["options"] = options
 
     kwargs["correct_answer"] = correct_answer
     kwargs["sentence"] = [begin, end]
@@ -92,96 +103,106 @@ def prepare_exercises(filepath: str, **kwargs) -> dict:
 
 
 def type_in_exercise(
-    sentences: list, pos: list, length: int, skip_length: int = 1
+    sentences: list, pos: list, length: int, skip_length: int = 1, multiple_skips: bool = False
 ) -> tuple:
     """
     Base function for other exercises.
-    Skip length is the count of skipped words.
+    Skip length is the count of skipped words for user to fill.
     """
 
     if len(sentences) < length:
         raise Exception("Provided text is too short.")
 
+    # picking up a sentence long enough
     while True:
         rng_sentence = random.randint(0, len(sentences) - length)
         if length == 1:
             sentence = sentences[rng_sentence]
         else:
-            sentence = " ".join(sentences[rng_sentence : rng_sentence + length])
+            sentence = " ".join(sentences[rng_sentence: rng_sentence + length])
         if len(sentence.split(" ")) > 3:  # take context into consideration
             break
 
     doc = nlp(sentence)
     tokens = [token.text_with_ws for token in doc]
 
+    # selecting skipped words
     if "ALL" not in pos:
         selected_tokens = [
             (token.text, token.i) for token in doc if token.pos_ in pos and token.i > 0
         ]
-        if skip_length > 1:
-            # remove tokens at the beginning and end of sentence
+        if skip_length > 1:  # don't select tokens at the very end of the sentence
             selected_tokens = list(
                 filter(lambda x: x[1] <= len(tokens) - skip_length, selected_tokens)
             )
-    # restrict to get slice correctly
-    elif len(tokens) > 2 * skip_length:
+    elif len(tokens) > 2 * skip_length:  # restrict to get slice correctly
         selected_tokens = [
             (token.text, token.i) for token in doc if not token.is_punct
         ][
             1:-skip_length
         ]  # by default remove 1st and last to prevent undesired behaviour
-    else:
-        return type_in_exercise(sentences, pos, length, skip_length)
+    else:  # too short sentence for current skip length
+        return type_in_exercise(sentences, pos, length, skip_length, multiple_skips)
 
-    if selected_tokens:
+    if selected_tokens and not multiple_skips:
         selected_token = random.choice(selected_tokens)
-    # in case sentence doesn't contain desired pos
-    else:
-        return type_in_exercise(sentences, pos, length, skip_length)
+        # selected_token[0] is the token, selected_token[1] is its index
+        begin = "".join(tokens[: selected_token[1]])
+        end = "".join(tokens[selected_token[1] + skip_length:])
+        correct_answer = selected_token[0]
 
-    # selected_token[0] is the token, selected_token[1] is index
-    begin = "".join(tokens[: selected_token[1]])
-    end = "".join(tokens[selected_token[1] + skip_length :])
-    correct_answer = selected_token[0]
+        # correct answer should be string
+        if skip_length > 1:
+            correct_answer = "".join(
+                [
+                    token
+                    for token in tokens[selected_token[1]: selected_token[1] + skip_length]
+                ]
+            ).strip()
 
-    if skip_length > 1:
-        correct_answer = "".join(
-            [
-                token
-                for token in tokens[selected_token[1] : selected_token[1] + skip_length]
-            ]
-        ).strip()
+        print(begin, end)
+        print(correct_answer)
+        return (correct_answer, begin, end)
 
-    print(begin, end)
-    print(correct_answer)
-    return (correct_answer, begin, end)
+    elif selected_tokens and multiple_skips and len(selected_tokens) >= skip_length:
+        selected_tokens = random.sample(selected_tokens, skip_length)
+        selected_tokens.sort(key=lambda x: x[1])
+        correct_answer = []
+        for idx in range(len(selected_tokens)):
+            position = selected_tokens[idx][1]
+            tokens.insert(position, f". . . {idx + 1} . . .  ")
+            correct_answer.append(tokens.pop(position+1).strip())
+
+        return (correct_answer, tokens)
+
+    else:  # in case sentence doesn't contain desired pos or number of pos
+        return type_in_exercise(sentences, pos, length, skip_length, multiple_skips)
 
 
 def multiple_choice_exercise(sentences: list, pos: list, length: int) -> tuple:
     correct_answer, begin, end = type_in_exercise(sentences, pos, length)
 
-    synonyms = model.most_similar(correct_answer.lower().strip())
+    synonyms = model.most_similar(correct_answer.lower())
+    # sometimes gensim suggest punctuation marks as similar words
+    synonyms = [synonym[0] for synonym in synonyms if synonym[0] not in ',.;:!?"']
 
     # adding some customization
     token = nlp(correct_answer.lower())[0]
     pos_tag = token.pos_
     option = None
 
-    if pos_tag == "VERB":
-        inflect_option = random.choice(["VBG", "VBN", "VBZ"])
-        option = token._.inflect(inflect_option)
-    elif pos_tag == "ADJ":
-        inflect_option = random.choice(["JJR", "JJS", "RB"])
-        option = token._.inflect(inflect_option)
-
-    synonyms = [synonym[0] for synonym in synonyms if synonym[0] not in ',.;:!?"']
+    for pos, inflection_options in inflection_dict.items():
+        if pos_tag == pos:
+            inflection_option = random.choice(inflection_options)
+            option = token._.inflect(inflection_option)
     if option and option not in synonyms:
         synonyms.insert(0, option)
 
     if len(synonyms) > NUM_SYNONYMS:
-        # options should contain tuples to correctly work with django forms
-        subsample = synonyms[:NUM_SYNONYMS]  # don't repeat options on same word
+        subsample = synonyms[:NUM_SYNONYMS]
+        # don't repeat options on same word
         options = random.sample(subsample, NUM_OPTIONS)
+        # options should contain tuples to correctly work with django forms
         options = list(zip(options, options))
     else:
         options = [(synonyms[i], synonyms[i]) for i in range(NUM_OPTIONS)]
@@ -189,7 +210,8 @@ def multiple_choice_exercise(sentences: list, pos: list, length: int) -> tuple:
     # for capitalized words
     if correct_answer == correct_answer.capitalize():
         options = [
-            (options[i][0].capitalize(), options[i][0].capitalize()) for i in range(3)
+            (options[i][0].capitalize(), options[i][0].capitalize())
+            for i in range(NUM_OPTIONS)
         ]
 
     options.append((correct_answer, correct_answer))
@@ -205,8 +227,8 @@ def word_order_exercise(
     answer = nlp(correct_answer)
     split = [token for token in answer]
 
-    # get rid of exercises with punctuation marks
-    # just in case checking length
+    # get rid of exercises with punctuation marks - they are bad
+    # just in case checking length (skip length is >= 3 - form params)
     if any([x.is_punct for x in split]) or len(split) < 3:
         return word_order_exercise(sentences, pos, length, skip_length)
 
@@ -218,22 +240,18 @@ def word_order_exercise(
         split_copy = split[:]
         split_copy.pop(random.choice(aux_ind))
         joined = " ".join([token.text for token in split_copy]).strip()
-        options.append(joined)  # len = 0-1
+        options.append(joined)  # current options len = 0-1
 
     # create the same string with one inflected verb/adjective
-    inflection_dict = {
-        "VERB": ["VBG", "VBN", "VBZ"],
-        "ADJ": ["JJR", "JJS", "RB"]
-    }
     for pos, inflection_options in inflection_dict.items():
         aux_ind = [i for i in range(len(split)) if split[i].pos_ == pos]
         if aux_ind:
             split_copy = split[:]
-            inflect_option = random.choice(inflection_options)
+            inflection_option = random.choice(inflection_options)
             i = random.choice(aux_ind)
-            option = split_copy[i]._.inflect(inflect_option)
+            option = split_copy[i]._.inflect(inflection_option)
             split_copy.insert(i, option)
-            split_copy = split_copy[: i + 1] + split_copy[i + 2 :]
+            split_copy = split_copy[: i + 1] + split_copy[i + 2:]
             joined = " ".join(
                 [
                     token.text if not isinstance(token, str) else token
@@ -251,7 +269,7 @@ def word_order_exercise(
         if word != split_copy[i].text:  # capitalized words
             synonym = synonym.capitalize()
         split_copy.insert(i, synonym)
-        split_copy = split_copy[: i + 1] + split_copy[i + 2 :]
+        split_copy = split_copy[: i + 1] + split_copy[i + 2:]
         joined = " ".join(
             [
                 token.text if not isinstance(token, str) else token
@@ -261,7 +279,7 @@ def word_order_exercise(
         options.append(joined)  # len = 1-3
 
     # shuffle word order
-    count = 0  # adding 2 sentences with incorrect order
+    count = 0  # adding 2 sentences with incorrect order in any case
     while count < NUM_OPTIONS - 1:
         random.shuffle(split)
         joined = " ".join([token.text for token in split]).strip()
@@ -272,9 +290,26 @@ def word_order_exercise(
 
     options = random.sample(options, NUM_OPTIONS)
     options.append(correct_answer)
-    options = set(options)
+    options = set(options)  # sometimes shuffle gives identical results
     options = list(zip(options, options))  # format to work with django forms
     print(options)
+    return (correct_answer, begin, end, options)
+
+
+def blanks_exercise(
+    sentences: list, pos: list, length: int, skip_length: int
+) -> tuple:
+    # getting a sequence of sentences with correct length
+    # performing all necessary length checks
+    correct_answer, sentence = type_in_exercise(
+        sentences, pos, length, skip_length, multiple_skips=True
+    )
+    correct_answer = ", ".join(correct_answer)
+    begin = "".join(sentence)
+    end = ""
+    o_1 = correct_answer + " sas"
+    o_2 = correct_answer + " sos"
+    options = ((o_1, o_1), (o_2, o_2), (correct_answer, correct_answer))
     return (correct_answer, begin, end, options)
 
 
@@ -284,7 +319,7 @@ if __name__ == "__main__":
         "username": "me",
         "pos": "NOUN",
         "length": 1,
-        "exercise_type": "word_order_exercise",
+        "exercise_type": "blanks_exercise",
         "skip_length": 3,
     }
     prepare_exercises(filepath, **kwargs)

@@ -96,6 +96,7 @@ class FilterForm(forms.ModelForm):
             ("type_in", "Type in"),
             ("multiple_choice", "Multiple choice"),
             ("word_order", "Complete sentence"),
+            ("blanks", "Complete blanks"),
         ),
         widget=forms.Select(
             attrs={
@@ -147,6 +148,7 @@ class TypeInExercise(forms.ModelForm):
     end = forms.CharField(
         max_length=1023,
         widget=forms.HiddenInput(),
+        required=False
     )
 
     class Meta:
@@ -175,6 +177,21 @@ class MultipleChoiceExercise(TypeInExercise):
         widget=forms.Select(
             attrs={
                 "class": "form-select",
+            }
+        ),
+    )
+
+
+class BlanksExercise(TypeInExercise):
+    """
+    Used for both multiple choice and word order exercises.
+    """
+
+    user_answer = forms.ChoiceField(
+        widget=forms.RadioSelect(
+            attrs={
+                "class": "form-check-label",
+                "type": "radio",
             }
         ),
     )

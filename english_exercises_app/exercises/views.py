@@ -6,7 +6,7 @@ from django.views.generic.base import TemplateView
 
 from text_processing.prepare_data import prepare_exercises
 
-from .forms import FileForm, FilterForm, MultipleChoiceExercise, TypeInExercise
+from .forms import FileForm, FilterForm, MultipleChoiceExercise, TypeInExercise, BlanksExercise
 from .models import Exercise, File, Memory
 
 # from english_exercises_app.mixins import MessagesMixin
@@ -120,9 +120,11 @@ class ExerciseShowView(TemplateView):
 
         if e_type == "type_in":
             form = TypeInExercise(initial=initial_data)
-        elif e_type == "multiple_choice" or "word_order":
+        elif e_type in ["multiple_choice", "word_order"]:
             form = MultipleChoiceExercise(initial=initial_data)
-            print(data["options"])
+            form.fields["user_answer"].choices = data["options"]
+        elif e_type == "blanks":
+            form = BlanksExercise(initial=initial_data)
             form.fields["user_answer"].choices = data["options"]
 
         return render(
@@ -137,6 +139,8 @@ class ExerciseShowView(TemplateView):
 
     def post(self, request):
         form = TypeInExercise(request.POST)
+        print(request.POST.get("user_answer"))
+        print(request.POST.get("correct_answer"))
         user = request.user
 
         # can get rid of this if pass the params with form
@@ -170,6 +174,7 @@ class ExerciseShowView(TemplateView):
 
         else:
             messages.error(request, _("Please provide a valid answer."))
+            print(form.errors)
             return render(
                 request,
                 "exercises/show.html",
