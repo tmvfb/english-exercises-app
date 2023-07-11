@@ -263,11 +263,11 @@ def blanks_exercise(sentences: list, pos: list, length: int, skip_length: int) -
         except KeyError:
             pass
 
-    options = random.sample(options, len(tokens) - 1)
+    options = random.sample(options, max(len(options) - 1, 0))
     options.extend(split_correct_answer)
     random.shuffle(options)
     options = set(options)
     options = ", ".join(options)
 
-    print(correct_answer, '\n', options)
+    print(correct_answer, "\n", options)
     return (correct_answer, begin, end, options)
