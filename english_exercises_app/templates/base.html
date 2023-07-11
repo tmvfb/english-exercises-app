@@ -80,7 +80,7 @@
 		{% translate 'Language' %}
 	      </a>
 	      <div class="dropdown-menu" aria-labelledby="dropdown01">
-		<form action="{% url 'home' %}" method="post" class="form-inline">
+		<form action="{% url 'set_language' %}" method="post" class="form-inline">
 		  {% csrf_token %}
 		  <input name="next" type="hidden" value="{{ redirect_to }}">
 		    {% for language in languages %}

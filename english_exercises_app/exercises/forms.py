@@ -13,6 +13,7 @@ class FileForm(forms.ModelForm):
     """
 
     file = forms.FileField(
+        label=_("File"),
         widget=forms.FileInput(
             attrs={
                 "class": "form-control",
@@ -33,7 +34,7 @@ class FileForm(forms.ModelForm):
         cleaned_data = super().clean()
 
         file = cleaned_data.get("file")
-        if file and not file._name.endswith((".txt", ".csv")):
+        if file and not file._name.endswith(".txt"):
             raise forms.ValidationError(_("Incorrect file format"))
 
         return cleaned_data
@@ -60,6 +61,7 @@ class FilterForm(forms.ModelForm):
     """
 
     count = forms.IntegerField(
+        label=_("Count"),
         initial=50,
         widget=forms.NumberInput(
             attrs={
@@ -75,11 +77,11 @@ class FilterForm(forms.ModelForm):
     pos = forms.MultipleChoiceField(
         label=_("Parts of speech"),
         choices=(
-            ("ALL", "All"),
-            ("VERB", "Verbs"),
-            ("NOUN", "Nouns"),
-            ("ADJ", "Adjectives"),
-            ("DET", "Articles"),
+            ("ALL", _("All")),
+            ("VERB", _("Verbs")),
+            ("NOUN", _("Nouns")),
+            ("ADJ", _("Adjectives")),
+            ("DET", _("Articles")),
         ),
         initial="ALL",
         widget=forms.CheckboxSelectMultiple(

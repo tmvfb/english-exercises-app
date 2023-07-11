@@ -5,11 +5,12 @@ import os
 import random
 
 from sentence_splitter import SentenceSplitter
+
 from .exercises import (
-    type_in_exercise,
-    multiple_choice_exercise,
-    word_order_exercise,
     blanks_exercise,
+    multiple_choice_exercise,
+    type_in_exercise,
+    word_order_exercise,
 )
 
 

@@ -21,7 +21,7 @@ test:
 	python3.8 manage.py test
 
 lint:
-	poetry run flake8 task_manager
+	poetry run flake8 english_exercises_app 
 
 check: sort selfcheck test lint
 

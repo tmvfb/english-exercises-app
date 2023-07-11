@@ -1,0 +1,293 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-07-11 21:48+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=4; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
+"%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || (n"
+"%100>=11 && n%100<=14)? 2 : 3);\n"
+
+#: english_exercises_app/exercises/forms.py:16
+#: english_exercises_app/exercises/models.py:21
+msgid "File"
+msgstr "Файл"
+
+#: english_exercises_app/exercises/forms.py:38
+msgid "Incorrect file format"
+msgstr "Формат файла не поддерживается"
+
+#: english_exercises_app/exercises/forms.py:64
+msgid "Count"
+msgstr "Количество"
+
+#: english_exercises_app/exercises/forms.py:78
+msgid "Parts of speech"
+msgstr "Части речи"
+
+#: english_exercises_app/exercises/forms.py:80
+#: english_exercises_app/exercises/forms.py:97
+msgid "All"
+msgstr "Все"
+
+#: english_exercises_app/exercises/forms.py:81
+msgid "Verbs"
+msgstr "Глаголы"
+
+#: english_exercises_app/exercises/forms.py:82
+msgid "Nouns"
+msgstr "Существительные"
+
+#: english_exercises_app/exercises/forms.py:83
+msgid "Adjectives"
+msgstr "Прилагательные"
+
+#: english_exercises_app/exercises/forms.py:84
+msgid "Articles"
+msgstr "Артикли"
+
+#: english_exercises_app/exercises/forms.py:95
+msgid "Exercise type"
+msgstr "Тип упражнения"
+
+#: english_exercises_app/exercises/forms.py:98
+msgid "Type in"
+msgstr "Ввод слова"
+
+#: english_exercises_app/exercises/forms.py:99
+msgid "Multiple choice"
+msgstr "Выбор слова"
+
+#: english_exercises_app/exercises/forms.py:100
+msgid "Complete sentence"
+msgstr "Дополнить предложение"
+
+#: english_exercises_app/exercises/forms.py:101
+msgid "Drag blanks"
+msgstr "Перетащить слова"
+
+#: english_exercises_app/exercises/forms.py:113
+msgid "Context length"
+msgstr "Длина контекста"
+
+#: english_exercises_app/exercises/forms.py:120
+msgid "Skipped words (complete sentence exercises only)"
+msgstr "Количество пропущенных слов (для некоторых упражнений)"
+
+#: english_exercises_app/exercises/models.py:22
+msgid "Files"
+msgstr "Файлы"
+
+#: english_exercises_app/exercises/models.py:54
+#: english_exercises_app/templates/exercises/show.html:11
+msgid "Exercise"
+msgstr "Упражнение"
+
+#: english_exercises_app/exercises/models.py:55
+#: english_exercises_app/templates/exercises/create.html:15
+msgid "Exercises"
+msgstr "Упражнения"
+
+#: english_exercises_app/exercises/views.py:41
+msgid "File uploaded successfully!"
+msgstr "Файл успешно загружен!"
+
+#: english_exercises_app/exercises/views.py:47
+msgid "Something went wrong. Please check file format"
+msgstr "Что-то пошло не так. Пожалуйста, проверьте формат файла"
+
+#: english_exercises_app/exercises/views.py:74
+msgid "Please select valid parameters"
+msgstr "Пожалуйста, укажите допустимые параметры"
+
+#: english_exercises_app/exercises/views.py:90
+msgid "Please upload a file."
+msgstr "Пожалуйста, загрузите файл"
+
+#: english_exercises_app/exercises/views.py:111
+#, python-brace-format
+msgid ""
+"You have completed all the exercises! Your score: {score} / {params.count}"
+msgstr ""
+"Отличная работа, вы выполнили все упражнения! Ваш результат: {score} / "
+"{params.count}"
+
+#: english_exercises_app/exercises/views.py:175
+msgid "Correct!"
+msgstr "Правильно!"
+
+#: english_exercises_app/exercises/views.py:180
+msgid "Sorry, your answer is incorrect"
+msgstr "К сожалению, вы где-то ошиблись"
+
+#: english_exercises_app/exercises/views.py:195
+msgid "Please provide a valid answer."
+msgstr "Пожалуйста, укажите допустимый ответ"
+
+#: english_exercises_app/mixins.py:26
+msgid "Something went wrong. Please check the entered data"
+msgstr "Что-то пошло не так. Пожалуйста, проверьте введенные данные"
+
+#: english_exercises_app/settings.py:147
+msgid "English"
+msgstr "Английский"
+
+#: english_exercises_app/settings.py:148
+msgid "Russian"
+msgstr "Русский"
+
+#: english_exercises_app/templates/base.html:16
+msgid "Practice English with your favourite texts"
+msgstr "Занимайся английским по мотивам любимых текстов"
+
+#: english_exercises_app/templates/base.html:31
+#: english_exercises_app/templates/base.html:48
+#: english_exercises_app/templates/base.html:131
+msgid "Exerciser"
+msgstr "Exerciser"
+
+#: english_exercises_app/templates/base.html:58
+msgid "Upload text"
+msgstr "Загрузить текст"
+
+#: english_exercises_app/templates/base.html:64
+msgid "Create new exercises"
+msgstr "Создать новые упражнения"
+
+#: english_exercises_app/templates/base.html:70
+msgid "Continue"
+msgstr "Продолжить"
+
+#: english_exercises_app/templates/base.html:80
+msgid "Language"
+msgstr "Язык"
+
+#: english_exercises_app/templates/base.html:95
+msgid "Login"
+msgstr "Авторизация"
+
+#: english_exercises_app/templates/base.html:98
+#: english_exercises_app/templates/users/create.html:25
+msgid "Sign up"
+msgstr "Регистрация"
+
+#: english_exercises_app/templates/base.html:103
+#: english_exercises_app/templates/exercises/stats.html:11
+msgid "Stats"
+msgstr "Статистика"
+
+#: english_exercises_app/templates/base.html:106
+msgid "Logout"
+msgstr "Выход"
+
+#: english_exercises_app/templates/base.html:133
+msgid ""
+"Practice English with your favourite texts. Exercises are created "
+"dynamically in accordance with the text you provide."
+msgstr ""
+"Занимайся английским по мотивам любимых текстов. Упражнения создаются в "
+"реальном времени по загруженному тексту."
+
+#: english_exercises_app/templates/base.html:136
+msgid "Please log in and upload text to get started."
+msgstr "Пожалуйста, зарегистрируйтесь и загрузите текст, чтобы начать."
+
+#: english_exercises_app/templates/exercises/create.html:35
+msgid "Generate"
+msgstr "Сгенерировать"
+
+#: english_exercises_app/templates/exercises/show.html:72
+msgid "Your answers:"
+msgstr "Ваши ответы:"
+
+#: english_exercises_app/templates/exercises/show.html:74
+#: english_exercises_app/templates/exercises/stats.html:22
+msgid "Correct answers:"
+msgstr "Правильные ответы:"
+
+#: english_exercises_app/templates/exercises/show.html:87
+msgid "Next"
+msgstr "Вперёд"
+
+#: english_exercises_app/templates/exercises/show.html:89
+msgid "Skip"
+msgstr "Пропустить"
+
+#: english_exercises_app/templates/exercises/show.html:91
+msgid "Check"
+msgstr "Проверить"
+
+#: english_exercises_app/templates/exercises/stats.html:18
+msgid "Total exercises completed:"
+msgstr "Всего упражнений выполнено"
+
+#: english_exercises_app/templates/exercises/stats.html:26
+#, python-format
+msgid "%% of correct answers (last 100 exercises):"
+msgstr "%% правильных ответов (последние 100 упражнений):"
+
+#: english_exercises_app/templates/exercises/upload.html:12
+msgid "Please upload a text file. Possible formats: .txt"
+msgstr "Пожалуйста, загрузите текстовый файл в формате .txt"
+
+#: english_exercises_app/templates/exercises/upload.html:14
+msgid "Uploading a new file deletes your previous entry."
+msgstr "Загрузка нового файла удаляет старый из памяти."
+
+#: english_exercises_app/templates/exercises/upload.html:30
+msgid "Upload"
+msgstr "Загрузить"
+
+#: english_exercises_app/templates/users/login.html:3
+msgid "Sign in"
+msgstr "Вход"
+
+#: english_exercises_app/users/forms.py:14
+msgid "Username"
+msgstr "Имя пользователя"
+
+#: english_exercises_app/users/forms.py:18
+msgid "Required. 50 characters or fewer. Letters, digits and @/./+/-/_ only."
+msgstr ""
+"Обязательное поле. 50 символов или меньше. Только буквы, цифры и символы @/./"
+"+/-/_"
+
+#: english_exercises_app/users/forms.py:21
+msgid "Password"
+msgstr "Пароль"
+
+#: english_exercises_app/users/forms.py:24
+msgid "Repeat password"
+msgstr "Повторите пароль"
+
+#: english_exercises_app/users/models.py:10
+msgid "User"
+msgstr "Пользователь"
+
+#: english_exercises_app/users/models.py:11
+msgid "Users"
+msgstr "Пользователи"
+
+#: english_exercises_app/users/views.py:15
+msgid "User created successfully!"
+msgstr "Пользователь успешно зарегистрирован"
+
+#: english_exercises_app/users/views.py:22
+msgid "Logged in successfully!"
+msgstr "Успешная авторизация"
+
+#: english_exercises_app/users/views.py:27
+msgid "You are logged out"
+msgstr "Вы разлогинены"

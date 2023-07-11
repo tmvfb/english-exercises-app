@@ -84,7 +84,7 @@
 
             <div class="col-12 d-flex flex-row-reverse">
               {% if button_status %}
-                <a href="{% url 'exercise_show' %}?next=true" class="btn btn-outline-info btn-md col-auto text-uppercase ms-3">{% translate 'Next' %}</a>
+                <a href="{% url 'exercise_show' %}?next=true" class="btn btn-outline-primary btn-md col-auto text-uppercase ms-3">{% translate 'Next' %}</a>
               {% else %}
                 <a href="{% url 'exercise_show' %}" class="btn btn-outline-secondary btn-md col-auto text-uppercase ms-3">{% translate 'Skip' %}</a>
               {% endif %}
