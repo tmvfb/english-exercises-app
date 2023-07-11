@@ -93,7 +93,7 @@ class ExerciseShowView(TemplateView):
         # retrieve current params for exercise generation
         params = Memory.objects.filter(user=request.user).first()
 
-        # return user score if all exercise were completed
+        # return user score if all exercises were completed
         if params.current_count == params.count:
             subquery = Exercise.objects.filter(user=request.user).order_by("-pk")[
                 : params.count
@@ -117,6 +117,7 @@ class ExerciseShowView(TemplateView):
             params.current_count += 1
             params.save()
 
+        # refer to Memory model for details on kwargs
         kwargs = {
             field.name: getattr(params, field.name)  # fmt: skip
             for field in params._meta.fields
@@ -128,8 +129,8 @@ class ExerciseShowView(TemplateView):
         initial_data = {
             "exercise_type": e_type,
             "correct_answer": data["correct_answer"],
-            "begin": data["sentence"][0],
-            "end": data["sentence"][1],
+            "begin": data["begin"],
+            "end": data["end"],
         }
 
         if e_type == "type_in":
@@ -153,6 +154,8 @@ class ExerciseShowView(TemplateView):
 
     def post(self, request):
         form = TypeInExercise(request.POST)
+        if request.POST.get("exercise_type") == "blanks":
+            form = BlanksExercise(request.POST)
         print(request.POST.get("user_answer"))
         print(request.POST.get("correct_answer"))
         user = request.user
@@ -182,7 +185,7 @@ class ExerciseShowView(TemplateView):
                 {
                     "form": form,
                     "button_status": "disabled",
-                    "correct_answer": correct_answer if not hide_correct else None,
+                    "correct_answer": None if hide_correct else correct_answer,
                     "count": params.count,
                     "current_count": params.current_count,
                 },

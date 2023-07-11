@@ -16,12 +16,13 @@ if not dev:  # speed up dev server deploy time
     spacy.cli.download("en_core_web_sm")
 
 nlp = spacy.load("en_core_web_sm")
-model = ""
+# model = ""
 model = gensim.downloader.load("glove-wiki-gigaword-100")
 
 
 NUM_SYNONYMS = 5  # [3, 10] - defines quality of synonyms for multichoice
 NUM_OPTIONS = 3  # number of options for multichoice exercises, <= SYN_COUNT
+DIVIDER = ".#.#."  # used for identifying skipped text inside template
 inflection_dict = {  # options for inflecting pos
     "VERB": ["VBG", "VBN", "VBZ"],
     "ADJ": ["JJR", "JJS", "RB"],
@@ -71,6 +72,7 @@ def prepare_exercises(filepath: str, **kwargs) -> dict:
     e_type = kwargs.get("exercise_type")
     pos = kwargs.get("pos")
     length = kwargs.get("length")
+    skip_length = kwargs.get("skip_length", 3)
 
     if e_type == "all_choices":
         e_type = random.choice(["type_in", "multiple_choice", "word_order", "blanks"])
@@ -78,27 +80,25 @@ def prepare_exercises(filepath: str, **kwargs) -> dict:
 
     if e_type == "type_in":
         correct_answer, begin, end = type_in_exercise(sentences, pos, length)
+        options = None
     elif e_type == "multiple_choice":
         correct_answer, begin, end, options = multiple_choice_exercise(
             sentences, pos, length
         )
-        kwargs["options"] = options
     elif e_type == "word_order":
-        skip_length = kwargs.get("skip_length", 3)
         correct_answer, begin, end, options = word_order_exercise(
             sentences, pos, length, skip_length
         )
-        kwargs["options"] = options
     elif e_type == "blanks":
-        skip_length = kwargs.get("skip_length", 3)
         correct_answer, begin, end, options = blanks_exercise(
             sentences, pos, length, skip_length
         )
-        kwargs["options"] = options
 
     kwargs["correct_answer"] = correct_answer
-    kwargs["sentence"] = [begin, end]
-    # kwargs should have correct answer and task sentence
+    kwargs["options"] = options
+    kwargs["begin"] = begin
+    kwargs["end"] = end
+    # kwargs should have correct answer and task sentence (begin + end)
     return kwargs
 
 
@@ -110,7 +110,8 @@ def type_in_exercise(
     multiple_skips: bool = False,
 ) -> tuple:
     """
-    Base function for other exercises.
+    Base function for  all other exercises.
+    Selects the skips in sentences in accordance with passed user params.
     Skip length is the count of skipped words for user to fill.
     """
 
@@ -165,31 +166,37 @@ def type_in_exercise(
                     ]
                 ]
             ).strip()
-
         print(begin, end)
         print(correct_answer)
-        return (correct_answer, begin, end)
 
-    elif selected_tokens and multiple_skips and len(selected_tokens) >= skip_length:
+    # only for blanks exercise
+    elif len(selected_tokens) >= skip_length and multiple_skips:
         selected_tokens = random.sample(selected_tokens, skip_length)
         selected_tokens.sort(key=lambda x: x[1])
         correct_answer = []
         for idx in range(len(selected_tokens)):
             position = selected_tokens[idx][1]
-            tokens.insert(position, ". . .")
+            tokens.insert(position, DIVIDER)  # mark the skips to find them in template
             correct_answer.append(tokens.pop(position + 1).strip())
 
-        return (correct_answer, tokens)
+        correct_answer = ", ".join(correct_answer)
+        begin = "".join(tokens)
+        end = ""  # this string is preserved for interface compatibility
 
     else:  # in case sentence doesn't contain desired pos or number of pos
         return type_in_exercise(sentences, pos, length, skip_length, multiple_skips)
+
+    return (correct_answer, begin, end)
 
 
 def multiple_choice_exercise(sentences: list, pos: list, length: int) -> tuple:
     correct_answer, begin, end = type_in_exercise(sentences, pos, length)
 
-    synonyms = model.most_similar(correct_answer.lower())
-    # sometimes gensim suggest punctuation marks as similar words
+    try:
+        synonyms = model.most_similar(correct_answer.lower())
+    except KeyError:
+        return multiple_choice_exercise(sentences, pos, length)
+    # sometimes gensim suggests punctuation marks as similar words
     synonyms = [synonym[0] for synonym in synonyms if synonym[0] not in ',.;:!?"']
 
     # adding some customization
@@ -271,10 +278,14 @@ def word_order_exercise(
         i = random.choice(range(len(split_copy)))
         word = split_copy[i].text.lower()
         syn_rank = random.choice(range(NUM_SYNONYMS))
-        synonym = model.most_similar(word)[syn_rank][0]
-        if word != split_copy[i].text:  # capitalized words
-            synonym = synonym.capitalize()
-        split_copy.insert(i, synonym)
+        try:
+            synonym = model.most_similar(word)[syn_rank][0]
+            if word != split_copy[i].text:  # capitalized words
+                synonym = synonym.capitalize()
+            split_copy.insert(i, synonym)
+        except KeyError:
+            pass
+
         split_copy = split_copy[: i + 1] + split_copy[i + 2 :]
         joined = " ".join(
             [
@@ -282,7 +293,7 @@ def word_order_exercise(
                 for token in split_copy
             ]
         ).strip()
-        options.append(joined)  # len = 1-3
+        options.append(joined)  # len = 0-2
 
     # shuffle word order
     count = 0  # adding 2 sentences with incorrect order in any case
@@ -290,7 +301,7 @@ def word_order_exercise(
         random.shuffle(split)
         joined = " ".join([token.text for token in split]).strip()
         if joined not in options:
-            options.append(joined)  # len = 3-5, i.e. [NUM_OPTIONS, NUM_OPTIONS+2]
+            options.append(joined)  # len = 2-4, i.e. [NUM_OPTIONS-1, NUM_OPTIONS+1]
             count += 1
         print(options)
 
@@ -305,24 +316,45 @@ def word_order_exercise(
 def blanks_exercise(sentences: list, pos: list, length: int, skip_length: int) -> tuple:
     # getting a sequence of sentences with correct length
     # performing all necessary length checks
-    correct_answer, sentence = type_in_exercise(
+    correct_answer, begin, end = type_in_exercise(
         sentences, pos, length, skip_length, multiple_skips=True
     )
-    correct_answer = ", ".join(correct_answer)
-    begin = "".join(sentence)
-    end = ""
-    options = correct_answer
+    split_correct_answer = correct_answer.split(", ")
+    doc = nlp(" ".join(split_correct_answer))
+    tokens = [token for token in doc]
+    options = []
+
+    for token in tokens:
+        if token.pos_ == "DET":
+            options.extend(["a", "an", "the"])
+        for pos in inflection_dict.keys():
+            if token.pos_ == pos:
+                inflection_option = random.choice(inflection_dict[pos])
+                options.append(token._.inflect(inflection_option))
+        syn_rank = random.choice(range(NUM_SYNONYMS))
+        try:
+            option = model.most_similar(token.text)[syn_rank][0]
+            options.append(option)
+        except KeyError:
+            pass
+
+    options = random.sample(options, len(tokens) - 1)
+    options.extend(split_correct_answer)
+    random.shuffle(options)
+    options = set(options)
+    options = ", ".join(options)
+
+    print(correct_answer, '\n', options)
     return (correct_answer, begin, end, options)
 
 
 if __name__ == "__main__":
     filepath = "/home/tmvfb/english-exercises-app/media/Little_Red_Cap__Jacob_and_Wilhelm_Grimm.txt"  # noqa: E501
     kwargs = {
-        "username": "me",
-        "pos": "NOUN",
+        "pos": "ALL",
         "length": 1,
-        "exercise_type": "blanks_exercise",
         "skip_length": 3,
+        "exercise_type": "blanks",
     }
     prepare_exercises(filepath, **kwargs)
     # remove_data(filepath, **kwargs)

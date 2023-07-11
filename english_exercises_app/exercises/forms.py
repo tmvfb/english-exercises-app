@@ -92,11 +92,11 @@ class FilterForm(forms.ModelForm):
     exercise_type = forms.ChoiceField(
         label=_("Exercise type"),
         choices=(
-            ("all_choices", "All"),
-            ("type_in", "Type in"),
-            ("multiple_choice", "Multiple choice"),
-            ("word_order", "Complete sentence"),
-            ("blanks", "Complete blanks"),
+            ("all_choices", _("All")),
+            ("type_in", _("Type in")),
+            ("multiple_choice", _("Multiple choice")),
+            ("word_order", _("Complete sentence")),
+            ("blanks", _("Drag blanks")),
         ),
         widget=forms.Select(
             attrs={
@@ -183,10 +183,6 @@ class MultipleChoiceExercise(TypeInExercise):
 
 
 class BlanksExercise(TypeInExercise):
-    """
-    Used for both multiple choice and word order exercises.
-    """
-
     user_answer = forms.CharField(
         widget=forms.HiddenInput(),
         # widget=forms.RadioSelect(

@@ -37,19 +37,20 @@
 
 	    {% if form.exercise_type.value == "blanks" %}
               <input type="hidden" id="id_user_answer" name="user_answer" value=""></input>
+              <input type="hidden" id="id_answers" name="answers" value="{{ form.answers.value }}"></input>
 
               <!-- render text -->
               <div class="row">
                 <div class="align-items-center mb-2">
-                {% for item in form.begin.value|split:". . ." %}
-                {{ item }}
-                {% if not forloop.last %}
-                <div class="content-task d-inline-flex col-auto justify-content-center">
-                  <ul class="questions text-justify">
-                    <li class="dropzone custom-number-{{ forloop.counter0 }}"><span class="word-empty">{{ forloop.counter }}</span></li>
-                  </ul>
-                </div>
-                {% endif %}
+                {% for item in form.begin.value|split:".#.#." %}
+                  {{ item }}
+                  {% if not forloop.last %}
+                  <div class="content-task d-inline-flex col-auto justify-content-center">
+                    <ul class="questions text-justify">
+                      <li class="dropzone custom-number-{{ forloop.counter0 }}"><span class="word-empty">{{ forloop.counter }}</span></li>
+                    </ul>
+                  </div>
+                  {% endif %}
                 {% endfor %}
                 </div>
               </div>
@@ -107,7 +108,7 @@
   .content-task ul li {
     list-style-type: none;
     display: inline-block;
-    min-height: 2em;
+    min-height: 2.3em;
     min-width: 5em;
     text-align: center;
   }
