@@ -1,5 +1,6 @@
 # from django.urls import reverse
 from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect, render
 from django.template.defaulttags import register
 from django.utils.translation import gettext_lazy as _
@@ -24,10 +25,12 @@ def split(value, key):
     return value.split(key)
 
 
-class ExerciseUploadView(TemplateView):
+class ExerciseUploadView(LoginRequiredMixin, TemplateView):
     """
     This class defines logic of file upload.
     """
+
+    login_url = "/users/login/"
 
     def get(self, request):
         form = FileForm()
@@ -49,10 +52,12 @@ class ExerciseUploadView(TemplateView):
             return redirect("exercise_upload")
 
 
-class ExerciseCreateView(TemplateView):
+class ExerciseCreateView(LoginRequiredMixin, TemplateView):
     """
     This class defines the parameters that are sent to text_processing module.
     """
+
+    login_url = "/users/login/"
 
     def get(self, request):
         form = FilterForm()
@@ -75,11 +80,13 @@ class ExerciseCreateView(TemplateView):
             return redirect("exercise_create")
 
 
-class ExerciseShowView(TemplateView):
+class ExerciseShowView(LoginRequiredMixin, TemplateView):
     """
     This class shows exercises
     and adds user input to database to maintain stats.
     """
+
+    login_url = "/users/login/"
 
     def get(self, request):
         # check if any file was uploaded
@@ -205,10 +212,12 @@ class ExerciseShowView(TemplateView):
             )
 
 
-class ExerciseStatsView(TemplateView):
+class ExerciseStatsView(LoginRequiredMixin, TemplateView):
     """
     Show exercise stats for the current user.
     """
+
+    login_url = "/users/login/"
 
     def get(self, request):
         user_stats = Exercise.objects.filter(user=request.user).order_by("-pk")
