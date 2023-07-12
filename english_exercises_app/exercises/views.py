@@ -1,4 +1,3 @@
-# from django.urls import reverse
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect, render
@@ -16,8 +15,6 @@ from .forms import (
     TypeInExercise,
 )
 from .models import Exercise, File, Memory
-
-# from english_exercises_app.mixins import MessagesMixin
 
 
 @register.filter(name="split")
@@ -45,7 +42,6 @@ class ExerciseUploadView(LoginRequiredMixin, TemplateView):
             return redirect("exercise_create")
 
         else:
-            print(form.errors)
             messages.warning(
                 request, _("Something went wrong. Please check file format")
             )
@@ -115,7 +111,7 @@ class ExerciseShowView(LoginRequiredMixin, TemplateView):
             messages.success(
                 request,
                 _(
-                    f"You have completed all the exercises! Your score: {score} / {params.count}"   # noqa: E501
+                    f"You have completed all the exercises! Your score: {score} / {params.count}"  # noqa: E501
                 ),
             )
             return redirect("exercise_create")
@@ -173,7 +169,6 @@ class ExerciseShowView(LoginRequiredMixin, TemplateView):
         if form.is_valid():
             correct_answer = form.cleaned_data["correct_answer"]
             user_answer = form.cleaned_data["user_answer"]
-            print(correct_answer, user_answer)
 
             form.save(user=user)
 

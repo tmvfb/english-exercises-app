@@ -135,8 +135,6 @@ AUTH_PASSWORD_VALIDATORS = [
 LOCALE_URL = "locale/"
 LOCALE_PATHS = [BASE_DIR / "locale"]
 
-LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'UTC'
 
 USE_I18N = True
@@ -162,8 +160,6 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-LANGUAGE_CODE = 'ru'
 
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'

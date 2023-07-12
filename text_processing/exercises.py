@@ -91,8 +91,6 @@ def type_in_exercise(
                     ]
                 ]
             ).strip()
-        print(begin, end)
-        print(correct_answer)
 
     # only for blanks exercise
     elif len(selected_tokens) >= skip_length and multiple_skips:
@@ -228,13 +226,11 @@ def word_order_exercise(
         if joined not in options:
             options.append(joined)  # len = 2-4, i.e. [NUM_OPTIONS-1, NUM_OPTIONS+1]
             count += 1
-        print(options)
 
     options = random.sample(options, NUM_OPTIONS)
     options.append(correct_answer)
     options = set(options)  # sometimes shuffle gives identical results
     options = list(zip(options, options))  # format to work with django forms
-    print(options)
     return (correct_answer, begin, end, options)
 
 
@@ -269,5 +265,4 @@ def blanks_exercise(sentences: list, pos: list, length: int, skip_length: int) -
     options = set(options)
     options = ", ".join(options)
 
-    print(correct_answer, "\n", options)
     return (correct_answer, begin, end, options)

@@ -88,6 +88,7 @@ def prepare_exercises(filepath: str, **kwargs) -> dict:
 
 
 if __name__ == "__main__":
+    # example script to test module functionality
     filepath = "/home/tmvfb/english-exercises-app/media/Little_Red_Cap__Jacob_and_Wilhelm_Grimm.txt"  # noqa: E501
     kwargs = {
         "pos": "ALL",
