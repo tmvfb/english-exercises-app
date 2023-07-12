@@ -156,12 +156,7 @@ LANGUAGES = (
 
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / "static"
-# STORAGES = {
-#     "staticfiles": {
-#         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-#     },
-# }
-#
+
 # Server uploads
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
@@ -183,12 +178,9 @@ FILE_UPLOAD_HANDLERS = [
     "django.core.files.uploadhandler.TemporaryFileUploadHandler",
 ]
 
-
 BOOTSTRAP5 = {
     "error_css_class": "bootstrap5-error",
     "required_css_class": "bootstrap5-required",
     "javascript_in_head": True,
     "include_jquery": True,
 }
-
-
