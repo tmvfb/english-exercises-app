@@ -8,9 +8,9 @@ import spacy.cli
 from dotenv import load_dotenv
 
 load_dotenv()
-dev = os.getenv("DEBUG", False)
+dev = os.getenv("DEBUG", 'false')
 
-if not dev:  # speed up dev server deploy time
+if dev != 'true':  # speed up dev server deploy time
     spacy.cli.download("en_core_web_sm")
 
 nlp = spacy.load("en_core_web_sm")

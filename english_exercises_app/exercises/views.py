@@ -127,7 +127,12 @@ class ExerciseShowView(LoginRequiredMixin, TemplateView):
         }
 
         # prepare exercises and populate form fields
-        data = prepare_exercises(filepath, **kwargs)
+        try:
+            data = prepare_exercises(filepath, **kwargs)
+        except FileNotFoundError:
+            messages.warning(request, _("Please upload a file"))
+            return redirect("exercise_upload")
+
         e_type = data["exercise_type"]
         initial_data = {
             "exercise_type": e_type,
