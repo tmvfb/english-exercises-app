@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-07-11 22:37+0300\n"
+"POT-Creation-Date: 2023-07-12 14:08+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -100,29 +100,33 @@ msgstr "Упражнение"
 msgid "Exercises"
 msgstr "Упражнения"
 
-#: english_exercises_app/exercises/views.py:44
+#: english_exercises_app/exercises/views.py:41
 msgid "File uploaded successfully!"
 msgstr "Файл успешно загружен!"
 
-#: english_exercises_app/exercises/views.py:50
+#: english_exercises_app/exercises/views.py:46
 msgid "Something went wrong. Please check file format"
 msgstr "Что-то пошло не так. Пожалуйста, проверьте формат файла"
 
-#: english_exercises_app/exercises/views.py:79
+#: english_exercises_app/exercises/views.py:75
 msgid "Please select valid parameters"
 msgstr "Пожалуйста, укажите допустимые параметры"
 
-#: english_exercises_app/exercises/views.py:97
+#: english_exercises_app/exercises/views.py:93
 msgid "Please upload a file."
 msgstr "Пожалуйста, загрузите файл"
 
-#: english_exercises_app/exercises/views.py:118
+#: english_exercises_app/exercises/views.py:114
 #, python-brace-format
 msgid ""
 "You have completed all the exercises! Your score: {score} / {params.count}"
 msgstr ""
 "Отличная работа, вы выполнили все упражнения! Ваш результат: {score} / "
 "{params.count}"
+
+#: english_exercises_app/exercises/views.py:133
+msgid "Please upload a file"
+msgstr "Пожалуйста, загрузите файл"
 
 #: english_exercises_app/exercises/views.py:182
 msgid "Correct!"
@@ -140,11 +144,11 @@ msgstr "Пожалуйста, укажите допустимый ответ"
 msgid "Something went wrong. Please check the entered data"
 msgstr "Что-то пошло не так. Пожалуйста, проверьте введенные данные"
 
-#: english_exercises_app/settings.py:147
+#: english_exercises_app/settings.py:149
 msgid "English"
 msgstr "Английский"
 
-#: english_exercises_app/settings.py:148
+#: english_exercises_app/settings.py:150
 msgid "Russian"
 msgstr "Русский"
 
@@ -197,7 +201,8 @@ msgid ""
 "Practice English with your favourite texts. Exercises are created "
 "dynamically in accordance with the text you provide."
 msgstr ""
-"Занимайтесь английским по любимым текстам. Упражнения создаются в реальном времени в соответствии с загруженным текстом."
+"Занимайтесь английским по любимым текстам. Упражнения создаются в реальном "
+"времени в соответствии с загруженным текстом."
 
 #: english_exercises_app/templates/base.html:136
 msgid "Please log in and upload text to get started."

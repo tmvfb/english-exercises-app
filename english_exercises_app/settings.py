@@ -33,7 +33,8 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'english_exercises_app.settings'
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG', 'false')
+DEBUG = bool(os.getenv('DEBUG'))
+print(DEBUG, type(DEBUG))
 
 ALLOWED_HOSTS = [
     'webserver', 'localhost', '127.0.0.1', '0.0.0.0',
@@ -134,7 +135,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
 LOCALE_URL = "locale/"
-LOCALE_PATHS = [BASE_DIR / "locale/"]
+LOCALE_PATHS = [BASE_DIR / "locale"]
 
 LANGUAGE_CODE = 'ru'
 
@@ -153,7 +154,6 @@ LANGUAGES = (
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = 'static/'
-# STATIC_ROOT = BASE_DIR / "staticfiles/"
 STATICFILES_DIRS = [BASE_DIR / "static/"]
 
 # Server uploads
