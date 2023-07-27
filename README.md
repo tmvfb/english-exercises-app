@@ -12,7 +12,7 @@ Python package to generate English practice exercises from an uploaded text. Web
 * Light/dark mode implementation with Bootstrap 5.3.0
 * 2 languages support (English, Russian)
 
-## Prerequisites (for local deploy)
+## Prerequisites (for local deploy, Linux)
 * Python >=3.8.1
 * pip >=22.0
 * poetry >=1.4.0
@@ -31,9 +31,10 @@ Apply migrations via `python3 manage.py migrate`.
 Run `make dev` to start dev server.
 
 ## Environment variables
+Add following variables to the .env file:
 ```
-SECRET_KEY=
-DATABASE_URL=
+SECRET_KEY=  # should be random
+DATABASE_URL=  # PostgreSQL database URL
 ```
 
 ## Todo list

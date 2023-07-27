@@ -22,7 +22,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install poetry
-          make install
+          make github-install
       - name: Run linter and check dependencies
         run: |
           make check-ci

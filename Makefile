@@ -1,14 +1,19 @@
 # starting server
 dev:
-	python3.8 manage.py runserver
+	python3 manage.py runserver
 
 start:
 	poetry run gunicorn english_exercises_app.wsgi --timeout 300
 
 # poetry commands for test
+github-install:
+	poetry build
+	poetry install
+
 install:
 	poetry build
 	poetry install
+	poetry shell
 
 # performing checks, formatting and lint
 selfcheck:
@@ -18,7 +23,7 @@ sort:
 	isort .
 
 test:
-	python3.8 manage.py test
+	python3 manage.py test
 
 lint:
 	poetry run flake8 english_exercises_app
