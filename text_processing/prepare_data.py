@@ -19,6 +19,8 @@ def load_data(filepath: str, username: str) -> list:
     Parsed data is stored in a json file under "path" filepath.
     It is assigned a {username}.json name for uniqueness.
     Every user has 2 associated files: original and jsonified.
+    Function loads associated user json or creates new json from an uploaded txt.
+    Case when no file is uploaded is handled by django backend.
     """
 
     path, _ = os.path.split(filepath)
@@ -83,7 +85,6 @@ def prepare_exercises(filepath: str, **kwargs) -> dict:
     kwargs["options"] = options
     kwargs["begin"] = begin
     kwargs["end"] = end
-    # kwargs should have correct answer and task sentence (begin + end)
     return kwargs
 
 

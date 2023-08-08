@@ -2,29 +2,56 @@ import os
 import random
 
 import gensim.downloader
-import lemminflect
 import spacy
 import spacy.cli
 from dotenv import load_dotenv
 
+from .spacy_token_processing import (
+    inflect_token,
+    remove_token,
+    replace_element_in_token_list,
+    select_skippable_tokens,
+)
+
+model = gensim.downloader.load("glove-wiki-gigaword-100")
+
 load_dotenv()
 dev = bool(os.getenv("DEBUG"))
-
 if not dev:  # speed up dev server deploy time
     spacy.cli.download("en_core_web_sm")
-
 nlp = spacy.load("en_core_web_sm")
-model = gensim.downloader.load("glove-wiki-gigaword-100")
-# model = ""
 
 
 NUM_SYNONYMS = 5  # [3, 10] - defines quality of synonyms for multichoice
-NUM_OPTIONS = 3  # number of options for multichoice exercises, <= SYN_COUNT
-DIVIDER = ".#.#."  # used for identifying skipped text inside template
-inflection_dict = {  # options for inflecting pos
-    "VERB": ["VBG", "VBN", "VBZ"],
-    "ADJ": ["JJR", "JJS", "RB"],
-}
+NUM_OPTIONS = 3  # number of options for multichoice exercises, <= NUM_SYNONYMS
+DIVIDER = ".#.#."  # used for identifying skipped text inside django template
+
+
+def replace_word_with_synonyms(word: str) -> list:
+    word_lower = word.lower()
+    try:
+        synonyms = model.most_similar(word_lower)
+        # sometimes gensim suggests punctuation marks as similar words
+        synonyms = [synonym[0] for synonym in synonyms if synonym[0] not in ',.;:!?"']
+    except KeyError:
+        return
+
+    if word != word_lower:
+        synonyms = [synonym.capitalize() for synonym in synonyms]
+    return synonyms
+
+
+def pick_long_sentence(sentences: list, length: int) -> str:
+    while True:
+        rng_sentence = random.randint(0, len(sentences) - length)
+        if length == 1:
+            sentence = sentences[rng_sentence]
+        else:
+            sentence = " ".join(sentences[rng_sentence : rng_sentence + length])
+        if len(sentence.split(" ")) > 3:  # take context into consideration
+            break
+
+    return sentence
 
 
 def type_in_exercise(
@@ -40,73 +67,46 @@ def type_in_exercise(
     Skip length is the count of skipped words for user to fill.
     """
 
-    if len(sentences) < length:
-        raise Exception("Provided text is too short.")
-
-    # picking up a sentence long enough
-    while True:
-        rng_sentence = random.randint(0, len(sentences) - length)
-        if length == 1:
-            sentence = sentences[rng_sentence]
-        else:
-            sentence = " ".join(sentences[rng_sentence : rng_sentence + length])
-        if len(sentence.split(" ")) > 3:  # take context into consideration
-            break
-
+    sentence = pick_long_sentence(sentences, length)
     doc = nlp(sentence)
-    tokens = [token.text_with_ws for token in doc]
+    all_tokens, selected_tokens = select_skippable_tokens(doc, skip_length, pos)
 
-    # selecting skipped words
-    if "ALL" not in pos:
-        selected_tokens = [
-            (token.text, token.i) for token in doc if token.pos_ in pos and token.i > 0
-        ]
-        if skip_length > 1:  # don't select tokens at the very end of the sentence
-            selected_tokens = list(
-                filter(lambda x: x[1] <= len(tokens) - skip_length, selected_tokens)
-            )
-    elif len(tokens) > 2 * skip_length:  # restrict to get slice correctly
-        selected_tokens = [
-            (token.text, token.i) for token in doc if not token.is_punct
-        ][
-            1:-skip_length
-        ]  # by default remove 1st and last to prevent undesired behaviour
-    else:  # too short sentence for current skip length
+    if not selected_tokens:  # sentence is too short
         return type_in_exercise(sentences, pos, length, skip_length, multiple_skips)
 
-    if selected_tokens and not multiple_skips:
-        selected_token = random.choice(selected_tokens)
-        # selected_token[0] is the token, selected_token[1] is its index
-        begin = "".join(tokens[: selected_token[1]])
-        end = "".join(tokens[selected_token[1] + skip_length :])
-        correct_answer = selected_token[0]
+    elif not multiple_skips:
+        skipped_token = random.choice(selected_tokens)
+        # skipped_token[0] is the token, skipped_token[1] is its index
+        begin = "".join(all_tokens[: skipped_token[1]])
+        end = "".join(all_tokens[skipped_token[1] + skip_length :])
+        correct_answer = skipped_token[0]
 
-        # correct answer should be string
         if skip_length > 1:
             correct_answer = "".join(
                 [
                     token
-                    for token in tokens[
-                        selected_token[1] : selected_token[1] + skip_length
+                    for token in all_tokens[
+                        skipped_token[1] : skipped_token[1] + skip_length
                     ]
                 ]
             ).strip()
 
-    # only for blanks exercise
-    elif len(selected_tokens) >= skip_length and multiple_skips:
+    # blanks exercises only
+    elif len(selected_tokens) >= skip_length:
         selected_tokens = random.sample(selected_tokens, skip_length)
         selected_tokens.sort(key=lambda x: x[1])
         correct_answer = []
         for idx in range(len(selected_tokens)):
             position = selected_tokens[idx][1]
-            tokens.insert(position, DIVIDER)  # mark the skips to find them in template
-            correct_answer.append(tokens.pop(position + 1).strip())
+            all_tokens.insert(position, DIVIDER)  # mark skips to find them in template
+            correct_answer.append(all_tokens.pop(position + 1).strip())
 
         correct_answer = ", ".join(correct_answer)
-        begin = "".join(tokens)
+        begin = "".join(all_tokens)
         end = ""  # this string is preserved for interface compatibility
 
-    else:  # in case sentence doesn't contain desired pos or number of pos
+    # in case sentence doesn't contain desired pos or number of pos
+    else:
         return type_in_exercise(sentences, pos, length, skip_length, multiple_skips)
 
     return (correct_answer, begin, end)
@@ -115,24 +115,15 @@ def type_in_exercise(
 def multiple_choice_exercise(sentences: list, pos: list, length: int) -> tuple:
     correct_answer, begin, end = type_in_exercise(sentences, pos, length)
 
-    try:
-        synonyms = model.most_similar(correct_answer.lower())
-    except KeyError:
+    synonyms = replace_word_with_synonyms(correct_answer)
+    if not synonyms:
         return multiple_choice_exercise(sentences, pos, length)
-    # sometimes gensim suggests punctuation marks as similar words
-    synonyms = [synonym[0] for synonym in synonyms if synonym[0] not in ',.;:!?"']
 
     # adding some customization
     token = nlp(correct_answer.lower())[0]
-    pos_tag = token.pos_
-    option = None
-
-    for pos, inflection_options in inflection_dict.items():
-        if pos_tag == pos:
-            inflection_option = random.choice(inflection_options)
-            option = token._.inflect(inflection_option)
-    if option and option not in synonyms:
-        synonyms.insert(0, option)
+    inflected_token = inflect_token(token)
+    if inflected_token and inflected_token not in synonyms:
+        synonyms.insert(0, inflected_token)
 
     if len(synonyms) > NUM_SYNONYMS:
         subsample = synonyms[:NUM_SYNONYMS]
@@ -141,13 +132,15 @@ def multiple_choice_exercise(sentences: list, pos: list, length: int) -> tuple:
         # options should contain tuples to correctly work with django forms
         options = list(zip(options, options))
     else:
-        options = [(synonyms[i], synonyms[i]) for i in range(NUM_OPTIONS)]
+        options = [
+            (synonyms[i], synonyms[i]) for i in range(min(len(synonyms), NUM_OPTIONS))
+        ]
 
     # for capitalized words
     if correct_answer == correct_answer.capitalize():
         options = [
             (options[i][0].capitalize(), options[i][0].capitalize())
-            for i in range(NUM_OPTIONS)
+            for i in range(len(options))
         ]
 
     options.append((correct_answer, correct_answer))
@@ -171,55 +164,28 @@ def word_order_exercise(
     options = []
 
     # create the same string with one removed article/aux verb
-    aux_ind = [i for i in range(len(split)) if split[i].pos_ in ["AUX", "DET"]]
-    if aux_ind:
-        split_copy = split[:]
-        split_copy.pop(random.choice(aux_ind))
-        joined = " ".join([token.text for token in split_copy]).strip()
-        options.append(joined)  # current options len = 0-1
+    removed = remove_token(answer)
+    if removed:
+        options.append(removed)  # current options len = 0-1
 
     # create the same string with one inflected verb/adjective
-    for pos, inflection_options in inflection_dict.items():
-        aux_ind = [i for i in range(len(split)) if split[i].pos_ == pos]
-        if aux_ind:
-            split_copy = split[:]
-            inflection_option = random.choice(inflection_options)
-            i = random.choice(aux_ind)
-            option = split_copy[i]._.inflect(inflection_option)
-            split_copy.insert(i, option)
-            split_copy = split_copy[: i + 1] + split_copy[i + 2 :]
-            joined = " ".join(
-                [
-                    token.text if not isinstance(token, str) else token
-                    for token in split_copy
-                ]
-            ).strip()
-            options.append(joined)  # len = 0-2
+    inflected = inflect_token(answer, multiple_tokens=True)
+    options.extend(inflected)  # current options len = 0-skip_length+1
 
-        # replace a word with synonym
-        split_copy = split[:]
-        i = random.choice(range(len(split_copy)))
-        word = split_copy[i].text.lower()
-        syn_rank = random.choice(range(NUM_SYNONYMS))
-        try:
-            synonym = model.most_similar(word)[syn_rank][0]
-            if word != split_copy[i].text:  # capitalized words
-                synonym = synonym.capitalize()
-            split_copy.insert(i, synonym)
-        except KeyError:
-            pass
+    # replace a word with synonym
+    split = [token for token in answer]
+    i = random.choice(range(len(split)))
+    syn_rank = random.choice(range(NUM_SYNONYMS))
 
-        split_copy = split_copy[: i + 1] + split_copy[i + 2 :]
-        joined = " ".join(
-            [
-                token.text if not isinstance(token, str) else token
-                for token in split_copy
-            ]
-        ).strip()
-        options.append(joined)  # len = 0-2
+    word = split[i].text
+    synonyms = replace_word_with_synonyms(word)
+    synonym = synonyms[syn_rank]
+    replaced = replace_element_in_token_list(split, synonym, i)
+    options.append(replaced)  # len = 0-skip_length+2
 
     # shuffle word order
-    count = 0  # adding 2 sentences with incorrect order in any case
+    # adding 2 sentences with incorrect order in any case
+    count = 0
     while count < NUM_OPTIONS - 1:
         random.shuffle(split)
         joined = " ".join([token.text for token in split]).strip()
@@ -248,16 +214,15 @@ def blanks_exercise(sentences: list, pos: list, length: int, skip_length: int) -
     for token in tokens:
         if token.pos_ == "DET":
             options.extend(["a", "an", "the"])
-        for pos in inflection_dict.keys():
-            if token.pos_ == pos:
-                inflection_option = random.choice(inflection_dict[pos])
-                options.append(token._.inflect(inflection_option))
+        inflected_token = inflect_token(token)
+        if inflected_token:
+            options.append(inflected_token)
+
         syn_rank = random.choice(range(NUM_SYNONYMS))
-        try:
-            option = model.most_similar(token.text)[syn_rank][0]
+        synonyms = replace_word_with_synonyms(token.text)
+        if synonyms:
+            option = synonyms[syn_rank]
             options.append(option)
-        except KeyError:
-            pass
 
     options = random.sample(options, max(len(options) - 1, 0))
     options.extend(split_correct_answer)

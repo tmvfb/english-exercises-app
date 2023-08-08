@@ -1,10 +1,10 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http.request import QueryDict
 from django.shortcuts import redirect, render
 from django.template.defaulttags import register
 from django.utils.translation import gettext_lazy as _
 from django.views.generic.base import TemplateView
-from django.http.request import QueryDict
 
 from text_processing.prepare_data import prepare_exercises
 
