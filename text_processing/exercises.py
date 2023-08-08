@@ -9,7 +9,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 dev = bool(os.getenv("DEBUG"))
-print(dev, type(dev))
 
 if not dev:  # speed up dev server deploy time
     spacy.cli.download("en_core_web_sm")

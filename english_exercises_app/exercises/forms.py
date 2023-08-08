@@ -152,6 +152,12 @@ class TypeInExercise(forms.ModelForm):
         widget=forms.HiddenInput(),
         required=False
     )
+    hint = forms.CharField(
+        max_length=255,
+        widget=forms.HiddenInput(),
+    )
+    count = forms.IntegerField(widget=forms.HiddenInput())
+    current_count = forms.IntegerField(widget=forms.HiddenInput())
 
     class Meta:
         model = Exercise

@@ -4,6 +4,7 @@ from django.shortcuts import redirect, render
 from django.template.defaulttags import register
 from django.utils.translation import gettext_lazy as _
 from django.views.generic.base import TemplateView
+from django.http.request import QueryDict
 
 from text_processing.prepare_data import prepare_exercises
 
@@ -63,11 +64,6 @@ class ExerciseCreateView(LoginRequiredMixin, TemplateView):
         form = FilterForm(request.POST)  # adds entry to Memory model
 
         if form.is_valid():
-            # # TODO: more options to come
-            # count = form.cleaned_data["count"]  # integer
-            # pos = form.cleaned_data["pos"]  # list
-            # ex_type = form.cleaned_data["exercise_type"]  # string
-            # length = form.cleaned_data["length"]  # integer
             form.save(user=request.user)
             return redirect("exercise_show")
 
@@ -84,63 +80,48 @@ class ExerciseShowView(LoginRequiredMixin, TemplateView):
 
     login_url = "/users/login/"
 
-    def get(self, request):
-        # check if any file was uploaded
-        file = File.objects.filter(user=request.user).first()
-        if file is not None:
-            filepath = file.file.path
-        else:
-            messages.error(request, _("Please upload a file."))
-            return redirect("exercise_upload")
+    def calculate_user_score(self, request, params):
+        subquery = Exercise.objects.filter(user=request.user).order_by("-pk")[
+            : params.count
+        ]
+        query = (
+            Exercise.objects.filter(pk__in=subquery).order_by("pk").filter(flag=True)
+        )
+        score = query.count()
 
-        # retrieve current params for exercise generation
-        params = Memory.objects.filter(user=request.user).first()
+        messages.success(
+            request,
+            _(
+                f"You have completed all the exercises! Your score: {score} / {params.count}"  # noqa: E501
+            ),
+        )
+        return redirect("exercise_create")
 
-        # return user score if all exercises were completed
-        if params.current_count == params.count:
-            subquery = Exercise.objects.filter(user=request.user).order_by("-pk")[
-                : params.count
-            ]
-            query = (
-                Exercise.objects.filter(pk__in=subquery)
-                .order_by("pk")
-                .filter(flag=True)
-            )
-            score = query.count()
+    def populate_exercise_form(self, data: QueryDict or dict) -> dict:
+        """
+        Function populates form data for all exercise types.
+        """
 
-            messages.success(
-                request,
-                _(
-                    f"You have completed all the exercises! Your score: {score} / {params.count}"  # noqa: E501
-                ),
-            )
-            return redirect("exercise_create")
+        if isinstance(data, QueryDict):  # handling post request
+            form = TypeInExercise(data)
+            if data.get("exercise_type") == "blanks":
+                form = BlanksExercise(data)
+            return form
 
-        elif request.GET.get("next") == "true":
-            params.current_count += 1
-            params.save()
-
-        # refer to Memory model for details on kwargs
-        kwargs = {
-            field.name: getattr(params, field.name)  # fmt: skip
-            for field in params._meta.fields
-        }
-
-        # prepare exercises and populate form fields
-        try:
-            data = prepare_exercises(filepath, **kwargs)
-        except FileNotFoundError:
-            messages.warning(request, _("Please upload a file"))
-            return redirect("exercise_upload")
-
+        # handling get request
         e_type = data["exercise_type"]
+        hints = {
+            "type_in": _("Type your answer"),
+            "multiple_choice": _("Select correct answer"),
+            "word_order": _("Select correct answer"),
+            "blanks": _("Drag and drop correct answers"),
+        }
         initial_data = {
             "exercise_type": e_type,
             "correct_answer": data["correct_answer"],
             "begin": data["begin"],
             "end": data["end"],
         }
-
         if e_type == "type_in":
             form = TypeInExercise(initial=initial_data)
         elif e_type in ["multiple_choice", "word_order"]:
@@ -149,33 +130,57 @@ class ExerciseShowView(LoginRequiredMixin, TemplateView):
         elif e_type == "blanks":
             form = BlanksExercise(initial=initial_data)
             form.fields["answers"].initial = data["options"]
+        form.fields["hint"].initial = hints[e_type]
+        form.fields["count"].initial = data["count"]
+        form.fields["current_count"].initial = data["current_count"]
+        return form
 
-        return render(
-            request,
-            "exercises/show.html",
-            {
-                "form": form,
-                "count": params.count,
-                "current_count": params.current_count,
-            },
-        )
+    def get(self, request):
+        file = File.objects.filter(user=request.user).first()
+        params = Memory.objects.filter(user=request.user).first()
+
+        if not file:
+            messages.error(request, _("Please upload a file."))
+            return redirect("exercise_upload")
+        if not params:
+            messages.error(request, _("Please specify exercise parameters."))
+            return redirect("exercise_create")
+
+        if params.current_count == params.count:
+            return self.calculate_user_score(request, params)
+
+        if request.GET.get("next") == "true":
+            params.current_count += 1
+            params.save()
+
+        # prepare exercises
+        try:
+            # refer to Memory model for details on kwargs
+            kwargs = {
+                field.name: getattr(params, field.name)  # fmt: skip
+                for field in params._meta.fields
+            }
+            filepath = file.file.path
+            data = prepare_exercises(filepath, **kwargs)
+        except FileNotFoundError:
+            messages.warning(request, _("Please upload a file"))
+            return redirect("exercise_upload")
+
+        # populate form fields
+        data["count"] = params.count
+        data["current_count"] = params.current_count
+        form = self.populate_exercise_form(data)
+
+        return render(request, "exercises/show.html", {"form": form})
 
     def post(self, request):
-        form = TypeInExercise(request.POST)
-        if request.POST.get("exercise_type") == "blanks":
-            form = BlanksExercise(request.POST)
-        print(request.POST.get("user_answer"))
-        print(request.POST.get("correct_answer"))
-        user = request.user
-
-        # can get rid of this if pass the params with form
-        params = Memory.objects.filter(user=user).first()
+        form = self.populate_exercise_form(request.POST)
 
         if form.is_valid():
             correct_answer = form.cleaned_data["correct_answer"]
             user_answer = form.cleaned_data["user_answer"]
 
-            form.save(user=user)
+            form.save(user=request.user)
 
             if user_answer == correct_answer:
                 hide_correct = True
@@ -193,23 +198,12 @@ class ExerciseShowView(LoginRequiredMixin, TemplateView):
                     "form": form,
                     "button_status": "disabled",
                     "correct_answer": None if hide_correct else correct_answer,
-                    "count": params.count,
-                    "current_count": params.current_count,
                 },
             )
 
         else:
             messages.error(request, _("Please provide a valid answer."))
-            print(form.errors)
-            return render(
-                request,
-                "exercises/show.html",
-                {
-                    "form": form,
-                    "count": params.count,
-                    "current_count": params.current_count,
-                },
-            )
+            return render(request, "exercises/show.html", {"form": form})
 
 
 class ExerciseStatsView(LoginRequiredMixin, TemplateView):
@@ -221,6 +215,13 @@ class ExerciseStatsView(LoginRequiredMixin, TemplateView):
 
     def get(self, request):
         user_stats = Exercise.objects.filter(user=request.user).order_by("-pk")
+
+        if user_stats.count() == 0:
+            messages.warning(
+                request,
+                _("No exercises have been completed yet, stats are not available."),
+            )
+            return redirect("home")
 
         subquery = user_stats[:100]
         query_total = Exercise.objects.filter(pk__in=subquery).count()

@@ -8,13 +8,16 @@
     <div class="card" >
 
       <div class="card-header bg-secondary text-white">
-        <h2>{% translate 'Exercise' %} # {{ current_count }} / {{ count }}</h2>
+        <h2>{% translate 'Exercise' %} # {{ form.current_count.value }} / {{ form.count.value }}</h2>
       </div>
 
       <div class="card-body bg-light">
         <form action="{% url 'exercise_show' %}" method="post" class="needs-validation" novalidate>
           <div class="form-group">
             {% csrf_token %}
+
+            <h4 class="text-muted font-weight-light my-3 ms-1">{{ form.hint.value }}</h4>
+            <hr>
 
             {% if form.exercise_type.value != "blanks" %}
               <table class="table table-hover table-borderless" required>
@@ -41,7 +44,7 @@
 
               <!-- render text -->
               <div class="row">
-                <div class="align-items-center mb-2">
+                <div class="align-items-center mb-2 mt-3">
                 {% for item in form.begin.value|split:".#.#." %}
                   {{ item }}
                   {% if not forloop.last %}
