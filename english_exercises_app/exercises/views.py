@@ -103,9 +103,11 @@ class ExerciseShowView(LoginRequiredMixin, TemplateView):
         """
 
         if isinstance(data, QueryDict):  # handling post request
-            form = TypeInExercise(data)
-            if data.get("exercise_type") == "blanks":
-                form = BlanksExercise(data)
+            form = (
+                TypeInExercise(data)
+                if data.get("exercise_type") != "blanks"
+                else BlanksExercise(data)
+            )
             return form
 
         # handling get request
@@ -183,10 +185,10 @@ class ExerciseShowView(LoginRequiredMixin, TemplateView):
             form.save(user=request.user)
 
             if user_answer == correct_answer:
-                hide_correct = True
+                hide_correct = (
+                    True if form.cleaned_data["exercise_type"] != "blanks" else False
+                )
                 messages.success(request, _("Correct!"))
-                if form.cleaned_data["exercise_type"] == "blanks":
-                    hide_correct = False
             else:
                 hide_correct = False
                 messages.error(request, _("Sorry, your answer is incorrect"))
