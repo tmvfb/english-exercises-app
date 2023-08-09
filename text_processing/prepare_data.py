@@ -60,6 +60,8 @@ def prepare_exercises(filepath: str, **kwargs) -> dict:
     pos = kwargs.get("pos")
     length = kwargs.get("length")
     skip_length = kwargs.get("skip_length", 3)
+    if len(sentences) < length:
+        raise Exception("Provided text is too short.")
 
     if e_type == "all_choices":
         e_type = random.choice(["type_in", "multiple_choice", "word_order", "blanks"])

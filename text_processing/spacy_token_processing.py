@@ -1,3 +1,8 @@
+"""
+This module works predominantly with spaCy objects. In order to reuse functions
+from this module, spaCy should be imported explicitly.
+"""
+
 import random
 
 import lemminflect
@@ -11,6 +16,12 @@ INFLECTION_DICT = {  # options for inflecting pos
 
 
 def select_skippable_tokens(doc: Doc, skip_length: int, pos: list) -> tuple:
+    """
+    Receives a spacy Doc object and finds which tokens can be skipped for
+    exercises in accordance with the given pos and skip length.
+    Returns all tokens in text format and skippable tokens in (text, position) format.
+    """
+
     all_tokens = [token.text_with_ws for token in doc]
     if "ALL" not in pos:
         selected_tokens = [
@@ -34,6 +45,11 @@ def select_skippable_tokens(doc: Doc, skip_length: int, pos: list) -> tuple:
 
 
 def inflect_token(doc: Token or Doc, multiple_tokens: bool = False) -> str or list:
+    """
+    Function inflecting spacy Token or Doc in accordance with INFLECTION_DICT.
+    Returns string if a Token object is passed, returns list, if Doc is passed.
+    """
+
     options = []
     if multiple_tokens:
         split = [token for token in doc]
@@ -56,17 +72,11 @@ def inflect_token(doc: Token or Doc, multiple_tokens: bool = False) -> str or li
     return options
 
 
-def replace_element_in_token_list(token_list: list, element: str, position: int) -> str:
-    token_list = token_list[:]
-    token_list.insert(position, element)
-    split = token_list[: position + 1] + token_list[position + 2 :]
-    joined = " ".join(
-        [token.text if not isinstance(token, str) else token for token in split]
-    ).strip()
-    return joined
-
-
 def remove_token(doc: Doc) -> str:
+    """
+    Remove a token in spacy Doc object if a token is auxiliary verb or determinant.
+    """
+
     split = [token for token in doc]
     aux_idx = [i for i in range(len(split)) if split[i].pos_ in ["AUX", "DET"]]
     if aux_idx:
@@ -74,3 +84,39 @@ def remove_token(doc: Doc) -> str:
         split_copy.pop(random.choice(aux_idx))
         joined = " ".join([token.text for token in split_copy]).strip()
         return joined
+
+
+def add_token(doc: Doc) -> str:
+    """
+    Add an article before noun.
+    """
+
+    split = [token for token in doc]
+    noun_idx = [i for i in range(len(split)) if split[i].pos_ == "NOUN"]
+    if noun_idx:
+        split_copy = split[:]
+        i = random.choice(noun_idx)
+        options = ["a", "an", "the"]
+        split_copy.insert(i, random.choice(options))
+        joined = " ".join(
+            [
+                token.text if not isinstance(token, str) else token
+                for token in split_copy
+            ]
+        ).strip()
+        return joined
+
+
+def replace_element_in_token_list(token_list: list, element: str, position: int) -> str:
+    """
+    Auxiliary function to replace an element in a list of tokens (or strings)
+    and return a joined string with replaced element.
+    """
+
+    token_list = token_list[:]
+    token_list.insert(position, element)
+    split = token_list[: position + 1] + token_list[position + 2 :]
+    joined = " ".join(
+        [token.text if not isinstance(token, str) else token for token in split]
+    ).strip()
+    return joined
