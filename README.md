@@ -2,6 +2,7 @@
 
 [![Website https://english-exercises-app-production.up.railway.app/](https://img.shields.io/website-up-down-green-red/https/english-exercises-app-production.up.railway.app.svg)](https://english-exercises-app-production.up.railway.app/)
 [![Github Actions Status](https://github.com/tmvfb/english-exercises-app/workflows/Python%20CI/badge.svg)](https://github.com/tmvfb/english-exercises-app/actions)
+[![Maintainability](https://api.codeclimate.com/v1/badges/620bb3a35893a3f0e87e/maintainability)](https://codeclimate.com/github/tmvfb/english-exercises-app/maintainability)
 
 ## Description
 Python package to generate English practice exercises from an uploaded text. Requires authentication and *.txt* file in English to start.
