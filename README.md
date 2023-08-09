@@ -4,7 +4,9 @@
 [![Github Actions Status](https://github.com/tmvfb/english-exercises-app/workflows/Python%20CI/badge.svg)](https://github.com/tmvfb/english-exercises-app/actions)
 
 ## Description
-Python package to generate English practice exercises from an uploaded text. Web backend (module **english_exercises_app**) is written in Django. Module **text_processing** is responsible for data processing and exercise generation using *gensim* and *spacy* libraries. Web app includes authentication system to remember user and exercise generation parameters, as well as to store user stats.
+Python package to generate English practice exercises from an uploaded text. Requires authentication and *.txt* file in English to start.
+  
+Web backend (module **english_exercises_app**) is written in [django](https://github.com/django/django). Module **text_processing** is responsible for data processing and exercise generation using [*gensim*](https://github.com/RaRe-Technologies/gensim) and [*spaCy*](https://github.com/explosion/spaCy) libraries. Web app includes authentication system to remember user and exercise generation parameters, as well as to store user stats. App is deployed using [Railway](https://railway.app/).
 
 **Key features:**
 * User registration and authentication, user answer stats
@@ -17,7 +19,7 @@ Python package to generate English practice exercises from an uploaded text. Web
 * pip >=22.0
 * poetry >=1.4.0
 * GNU make
-* Configured PostgreSQL database
+* Configured PostgreSQL database (app won't work with other database types due to use of Django ArrayField)
 
 
 ## Local installation (WSL/Linux)
@@ -26,19 +28,19 @@ $ git clone https://github.com/tmvfb/english-exercises-app.git
 $ cd english-exercises-app.git 
 $ make install
 ```
-Then configure environment variables below.  
-Apply migrations via `python3 manage.py migrate`.
-Run `make dev` to start dev server.
+* Configure environment variables below    
+* Apply migrations via `python3 manage.py migrate`
+* Run `make dev` to start dev server
 
 ## Environment variables
 Add following variables to the .env file:
 ```
-SECRET_KEY=  # should be random
+SECRET_KEY=
 DATABASE_URL=  # PostgreSQL database URL
 ```
 
 ## Todo list
-* Full CRUD for users
-* New exercise types and adding more variability to old ones 
-* Better design for drag and drop exercises 
-* Write some tests?
+1. Full CRUD for users
+2. New exercise types and adding more variability to old ones 
+3. Better design for drag and drop exercises 
+4. Consider TDD for further development
