@@ -1,4 +1,3 @@
-import os
 import random
 
 import gensim.downloader
@@ -17,9 +16,9 @@ from .spacy_token_processing import (
 model = gensim.downloader.load("glove-wiki-gigaword-100")
 
 load_dotenv()
-dev = bool(os.getenv("DEBUG"))
-if not dev:  # speed up dev server deploy time
-    spacy.cli.download("en_core_web_sm")
+# dev = bool(os.getenv("DEBUG"))
+# if not dev:  # speed up dev server deploy time
+spacy.cli.download("en_core_web_sm")
 nlp = spacy.load("en_core_web_sm")
 
 
