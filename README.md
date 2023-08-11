@@ -48,8 +48,9 @@ Further steps depend on the platform:
 **Linux/WSL:**  
 ```
 $ make install
-# apply migrations
+# apply migrations and configure static files
 $ python3 manage.py migrate
+$ python3 manage.py collectstatic --noinput
 # run to start dev server
 $ make dev
 ```
@@ -59,6 +60,7 @@ Run `deactivate` to exit virtual environment.
 ```
 docker compose build
 docker compose run web python3 manage.py migrate
+docker compose run web python3 manage.py collectstatic --noinput
 docker compose up
 ```
 
@@ -67,4 +69,3 @@ docker compose up
 2. New exercise types and adding more variability to old ones 
 3. Better design for drag and drop exercises 
 4. Consider TDD for further development
-5. Remove static files from repository and establish CI/CD using collectstatic
