@@ -41,9 +41,8 @@ Further steps depend on the platform:
 **Linux/WSL:**  
 ```
 $ make install
-# apply migrations and configure static files
+# apply migrations
 $ python3 manage.py migrate
-$ python3 manage.py collectstatic --noinput
 # run to start dev server
 $ make dev
 ```
@@ -53,7 +52,6 @@ Run `deactivate` to exit virtual environment.
 ```
 docker compose build
 docker compose run web python3 manage.py migrate
-docker compose run web python3 manage.py collectstatic --noinput
 docker compose up
 ```
 

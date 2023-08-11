@@ -14,6 +14,7 @@ install:
 	poetry build
 	poetry install
 	poetry shell
+	python3 manage.py collectstatic --noinput
 
 # performing checks, formatting and lint
 selfcheck:

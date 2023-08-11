@@ -6,6 +6,7 @@ COPY . /app/
 
 RUN pip install poetry
 RUN poetry config virtualenvs.create false && poetry install --no-interaction --no-ansi
+RUN python3 manage.py collectstatic --noinput
 
 EXPOSE 8000
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+CMD python3 manage.py migrate && gunicorn english_exercises_app.wsgi --timeout 300
