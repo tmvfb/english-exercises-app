@@ -1,10 +1,13 @@
 version: '3'
 services:
   db:
-    image: postgres
+    image: postgres:latest
+    ports:
+      - "5432:5432"
     environment:
-      POSTGRES_HOST_AUTH_METHOD: "trust"  # remove this in production
-      DATABASE_URL: ${DATABASE_URL}
+      POSTGRES_DB: sample_name
+      POSTGRES_USER: Walter_White
+      POSTGRES_PASSWORD: ilovecooking
 
   web:
     build: .
@@ -15,5 +18,11 @@ services:
       - "8000:8000"
     depends_on:
       - db
+    environment:
+      - DJANGO_DB_HOST=db
+      - DJANGO_DB_PORT=5432
+      - DJANGO_DB_NAME=sample_name
+      - DJANGO_DB_USER=Walter_White
+      - DJANGO_DB_PASSWORD=ilovecooking
     env_file:
       - .env

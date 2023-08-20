@@ -27,7 +27,6 @@ Local deploy is possible using either Linux/WSL or Docker.
   
 **Docker:**  
 * Latest releases of Docker and Docker Compose
-* Configured PostgreSQL database
 
 ## Local installation
 Clone repository:
@@ -35,10 +34,10 @@ Clone repository:
 $ git clone https://github.com/tmvfb/english-exercises-app.git
 $ cd english-exercises-app.git 
 ```
-Then configure environment variables below.  
 Further steps depend on the platform:
    
 **Linux/WSL:**  
+First, configure environment variables below. Then:
 ```
 $ make install
 # apply migrations
@@ -54,6 +53,7 @@ docker compose build
 docker compose run web python3 manage.py migrate
 docker compose up
 ```
+To use custom PostgreSQL database and django secret key, you can also create a .env file and specify the environment variables below before running the first command.  
 
 ## Environment variables
 Add following variables to the .env file:
