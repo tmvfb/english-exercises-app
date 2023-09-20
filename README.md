@@ -5,7 +5,7 @@
 [![Maintainability](https://api.codeclimate.com/v1/badges/620bb3a35893a3f0e87e/maintainability)](https://codeclimate.com/github/tmvfb/english-exercises-app/maintainability)
 
 ## Description
-Web app in python that generates English practice exercises from an uploaded text. Requires authentication and *.txt* file in English to start.
+Web app that generates English practice exercises from an uploaded text. Requires authentication and a *.txt* file in English to start.
   
 Module **english_exercises_app** is written in [django](https://github.com/django/django) and accounts for web backend. Module **text_processing** is responsible for data processing and exercise generation using [*gensim*](https://github.com/RaRe-Technologies/gensim) and [*spaCy*](https://github.com/explosion/spaCy) libraries. Web app includes authentication system to remember user and exercise generation parameters, as well as to store user stats. App is deployed using [Railway](https://railway.app/).
   
