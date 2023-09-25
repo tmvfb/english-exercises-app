@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block main %}
+  <h1 class="mb-5">Settings</h1>
+  {% if request.user.is_authenticated %}
+    <p>
+      <a href="{% url 'user_update' %}" class="col-auto mb-3">{% translate "Change password" %}</a>
+    </p>
+    <p>
+      <a href="{% url 'user_delete' pk=request.user.pk %}" class="btn-md col-auto">{% translate "Delete user" %}</a>
+    </p>
+  {%  endif %}
+{% endblock %}

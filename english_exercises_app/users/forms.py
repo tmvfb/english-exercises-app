@@ -1,4 +1,8 @@
-from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+from django.contrib.auth.forms import (
+    AuthenticationForm,
+    PasswordChangeForm,
+    UserCreationForm,
+)
 from django.utils.translation import gettext_lazy as _
 
 from .models import User
@@ -38,3 +42,11 @@ class LoginForm(AuthenticationForm):
         super().__init__(*args, **kwargs)
         self.fields["username"].widget.attrs.update({"class": "form-control"})
         self.fields["password"].widget.attrs.update({"class": "form-control"})
+
+
+class PasswordUpdateForm(PasswordChangeForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["old_password"].widget.attrs.update({"class": "form-control mt-1"})
+        self.fields["new_password1"].widget.attrs.update({"class": "form-control mt-1"})
+        self.fields["new_password2"].widget.attrs.update({"class": "form-control mt-1"})

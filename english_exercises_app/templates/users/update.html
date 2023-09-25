@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block main %}
+  <div class="wrapper flex-grow-1 col-lg-6">
+    <h1 class="my-4">
+      {% translate 'Update password' %}
+    </h1>
+    <form action="{% url 'user_update' %}" method="post" rel="nofollow">
+      {{ form.as_p }}
+      {% csrf_token %}
+      <input class="btn btn-outline-success mt-2 text-uppercase" type="submit" value="{% translate 'Update password' %}">
+    </form>
+  </div>
+{% endblock %}
