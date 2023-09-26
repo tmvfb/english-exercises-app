@@ -3,8 +3,11 @@
 import json
 import os
 import random
+from pathlib import Path
 from typing import List
 
+import requests
+from dotenv import load_dotenv
 from sentence_splitter import SentenceSplitter
 
 from .exercises import (
@@ -12,6 +15,15 @@ from .exercises import (
     multiple_choice_exercise,
     type_in_exercise,
     word_order_exercise,
+)
+
+BASE_DIR = Path(__file__).resolve().parent
+load_dotenv()
+load_dotenv(os.path.join(BASE_DIR, ".env"))
+
+API_TOKEN = os.getenv('HUGGINGFACE_API_TOKEN')
+API_URL = (
+    "https://api-inference.huggingface.co/models/facebook/fastspeech2-en-ljspeech"
 )
 
 
@@ -45,10 +57,22 @@ def load_data(filepath: str, username: str) -> List[str]:
 def remove_data(filepath: str, username: str, **kwargs):
     path, _ = os.path.split(filepath)
     path = path + "/" + username + ".json"
-    try:
+    if os.path.exists(path):
         os.remove(path)
-    except FileNotFoundError:
-        pass
+
+
+def load_audio_and_get_path(filepath: str, username: str, text: str):
+    path, _ = os.path.split(filepath)
+    path = path + "/" + username + ".wav"
+    if os.path.exists(path):
+        os.remove(path)
+
+    headers = {"Authorization": f"Bearer {API_TOKEN}"}
+    response = requests.post(API_URL, headers=headers, json={"inputs": text})
+    with open(path, mode='bx') as f:
+        f.write(response.content)
+
+    return path
 
 
 def prepare_exercises(filepath: str, **kwargs) -> dict:
@@ -88,6 +112,9 @@ def prepare_exercises(filepath: str, **kwargs) -> dict:
     kwargs["options"] = options
     kwargs["begin"] = begin
     kwargs["end"] = end
+    if kwargs.get("add_audio"):
+        kwargs["audio"] = begin + correct_answer + end
+
     return kwargs
 
 

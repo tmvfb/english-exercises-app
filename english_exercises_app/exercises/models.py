@@ -22,6 +22,23 @@ class File(models.Model):
         verbose_name_plural = _("Files")
 
 
+class AudioFile(models.Model):
+    """
+    A class to store audio.
+    """
+
+    file = models.FileField(
+        upload_to="",
+    )
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE
+    )
+
+    class Meta:
+        verbose_name = _("Audio file")
+        verbose_name_plural = _("Audio files")
+
+
 class Exercise(models.Model):
     """
     Stores information about user answers.
@@ -73,6 +90,7 @@ class Memory(models.Model):
     exercise_type = models.CharField(max_length=255)
     length = models.IntegerField()
     skip_length = models.IntegerField()
+    add_audio = models.BooleanField(blank=True, null=True)
 
     @classmethod
     def get_current_count(cls):

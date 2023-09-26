@@ -1,3 +1,4 @@
+import base64
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http.request import QueryDict
@@ -7,7 +8,10 @@ from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 from django.views.generic.base import TemplateView
 
-from text_processing.prepare_data import prepare_exercises
+from django.core.files import File as DjangoFile
+from .models import AudioFile
+
+from text_processing.prepare_data import prepare_exercises, load_audio_and_get_path
 
 from .forms import (
     BlanksExercise,
@@ -80,6 +84,21 @@ class ExerciseShowView(LoginRequiredMixin, TemplateView):
     """
 
     login_url = reverse_lazy("user_login")
+
+    def upload_audio(self, files_path, text):
+        audio = AudioFile.objects.filter(user=self.request.user).first()
+        if audio is not None:
+            audio.delete()
+        file_path = load_audio_and_get_path(
+            files_path, self.request.user.username, text
+        )
+
+        audio = AudioFile()
+
+        audio.file.name = f"{self.request.user}.wav"
+        audio.user = self.request.user
+        audio.save()
+        print(AudioFile.objects.filter(user=self.request.user).first())
 
     def calculate_user_score(self, request, params):
         subquery = Exercise.objects.filter(user=request.user).order_by("-pk")[
@@ -169,12 +188,22 @@ class ExerciseShowView(LoginRequiredMixin, TemplateView):
             messages.warning(request, _("Please upload a file"))
             return redirect("exercise_upload")
 
+        if data.get("audio"):
+            self.upload_audio(filepath, data.get("audio"))
+
         # populate form fields
         data["count"] = params.count
         data["current_count"] = params.current_count
         form = self.populate_exercise_form(data)
 
-        return render(request, "exercises/show.html", {"form": form})
+        return render(
+            request,
+            "exercises/show.html",
+            {
+                "form": form,
+                "audio": AudioFile.objects.filter(user=request.user).first(),
+            },
+        )
 
     def post(self, request):
         form = self.populate_exercise_form(request.POST)

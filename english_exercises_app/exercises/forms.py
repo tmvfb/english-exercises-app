@@ -86,7 +86,6 @@ class FilterForm(forms.ModelForm):
         initial="ALL",
         widget=forms.CheckboxSelectMultiple(
             attrs={
-                # "class": "form-select",
                 "multiple": True,
             }
         ),
@@ -120,10 +119,16 @@ class FilterForm(forms.ModelForm):
         label=_("Skipped words (complete sentence exercises only)"),
         widget=forms.NumberInput(attrs={"class": "form-control"}),
     )
+    add_audio = forms.BooleanField(
+        required=False,
+        initial=False,
+        label=_("Enable audio"),
+        widget=forms.CheckboxInput(attrs={"class": "form-check-input"}),
+    )
 
     class Meta:
         model = Memory
-        fields = ["count", "pos", "exercise_type", "length", "skip_length"]
+        fields = ["count", "pos", "exercise_type", "length", "skip_length", "add_audio"]
 
     def save(self, user, commit=True):
         # delete previous entry, if exists
@@ -158,6 +163,10 @@ class TypeInExercise(forms.ModelForm):
     )
     count = forms.IntegerField(widget=forms.HiddenInput())
     current_count = forms.IntegerField(widget=forms.HiddenInput())
+    audio = forms.CharField(
+        max_length=1000000000,
+        widget=forms.HiddenInput(),
+    )
 
     class Meta:
         model = Exercise
