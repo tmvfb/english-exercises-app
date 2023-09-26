@@ -38,7 +38,7 @@ shell:
 	django-admin shell
 
 trans:
-	django-admin makemessages -l ru
+	django-admin makemessages -l ru --ignore=static
 
 compile:
 	django-admin compilemessages
