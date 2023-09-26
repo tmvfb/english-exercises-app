@@ -3,6 +3,7 @@
 import json
 import os
 import random
+from typing import List
 
 from sentence_splitter import SentenceSplitter
 
@@ -14,7 +15,7 @@ from .exercises import (
 )
 
 
-def load_data(filepath: str, username: str) -> list:
+def load_data(filepath: str, username: str) -> List[str]:
     """
     Parsed data is stored in a json file under "path" filepath.
     It is assigned a {username}.json name for uniqueness.

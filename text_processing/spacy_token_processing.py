@@ -3,7 +3,10 @@ This module works predominantly with spaCy objects. In order to reuse functions
 from this module, spaCy should be imported explicitly.
 """
 
+from __future__ import annotations  # for using better hints with python 3.7+
+
 import random
+from typing import List, Tuple, Union
 
 import lemminflect
 from spacy.tokens.doc import Doc
@@ -15,7 +18,9 @@ INFLECTION_DICT = {  # options for inflecting pos
 }
 
 
-def select_skippable_tokens(doc: Doc, skip_length: int, pos: list) -> tuple:
+def select_skippable_tokens(
+    doc: Doc, skip_length: int, pos: List[str]
+) -> Tuple[List[str], List[Tuple[str, int]] | None]:
     """
     Receives a spacy Doc object and finds which tokens can be skipped for
     exercises in accordance with the given pos and skip length.
@@ -44,7 +49,9 @@ def select_skippable_tokens(doc: Doc, skip_length: int, pos: list) -> tuple:
     return all_tokens, selected_tokens
 
 
-def inflect_token(doc: Token or Doc, multiple_tokens: bool = False) -> str or list:
+def inflect_token(
+    doc: Union[Token, Doc], multiple_tokens: bool = False
+) -> Union[str, List[str]]:
     """
     Function inflecting spacy Token or Doc in accordance with INFLECTION_DICT.
     Returns string if a Token object is passed, returns list, if Doc is passed.
@@ -107,7 +114,9 @@ def add_token(doc: Doc) -> str:
         return joined
 
 
-def replace_element_in_token_list(token_list: list, element: str, position: int) -> str:
+def replace_element_in_token_list(
+    token_list: List[Token], element: str, position: int
+) -> str:
     """
     Auxiliary function to replace an element in a list of tokens (or strings)
     and return a joined string with replaced element.

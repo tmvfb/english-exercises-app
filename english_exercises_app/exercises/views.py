@@ -3,6 +3,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http.request import QueryDict
 from django.shortcuts import redirect, render
 from django.template.defaulttags import register
+from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 from django.views.generic.base import TemplateView
 
@@ -28,7 +29,7 @@ class ExerciseUploadView(LoginRequiredMixin, TemplateView):
     This class defines logic of file upload.
     """
 
-    login_url = "/users/login/"
+    login_url = reverse_lazy("user_login")
 
     def get(self, request):
         form = FileForm()
@@ -54,7 +55,7 @@ class ExerciseCreateView(LoginRequiredMixin, TemplateView):
     This class defines the parameters that are sent to text_processing module.
     """
 
-    login_url = "/users/login/"
+    login_url = reverse_lazy("user_login")
 
     def get(self, request):
         form = FilterForm()
@@ -78,7 +79,7 @@ class ExerciseShowView(LoginRequiredMixin, TemplateView):
     and adds user input to database to maintain stats.
     """
 
-    login_url = "/users/login/"
+    login_url = reverse_lazy("user_login")
 
     def calculate_user_score(self, request, params):
         subquery = Exercise.objects.filter(user=request.user).order_by("-pk")[
@@ -213,7 +214,7 @@ class ExerciseStatsView(LoginRequiredMixin, TemplateView):
     Show exercise stats for the current user.
     """
 
-    login_url = "/users/login/"
+    login_url = reverse_lazy("user_login")
 
     def get(self, request):
         user_stats = Exercise.objects.filter(user=request.user).order_by("-pk")
@@ -247,6 +248,12 @@ class ExerciseStatsView(LoginRequiredMixin, TemplateView):
 
 
 class ExerciseStatsDeleteView(LoginRequiredMixin, TemplateView):
+    """
+    Delete exercise stats for the current user.
+    """
+
+    login_url = reverse_lazy("user_login")
+
     def get(self, request):
         return render(request, "exercises/stats_delete.html")
 
