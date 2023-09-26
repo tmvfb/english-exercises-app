@@ -244,3 +244,14 @@ class ExerciseStatsView(LoginRequiredMixin, TemplateView):
                 "percentage": percentage_last_100,
             },
         )
+
+
+class ExerciseStatsDeleteView(LoginRequiredMixin, TemplateView):
+    def get(self, request):
+        return render(request, "exercises/stats_delete.html")
+
+    def post(self, request):
+        user_stats = Exercise.objects.filter(user=request.user)
+        user_stats.delete()
+        messages.success(request, _("Stats deleted successfully!"))
+        return redirect("home")

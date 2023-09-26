@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block main %}
+  <div class="container wrapper flex-grow-1">
+    <h1 class="my-4">
+      {% translate 'Delete stats' %}
+    </h1>
+    <p>{% translate 'Are you sure you want to delete your stats, ' %}<span style="font-weight:bold"> {{ request.user.username }}</span>? {% translate 'This action cannot be undone.' %}</p>
+    <form action="{% url 'exercise_stats_delete' %}" method="post" rel="nofollow">
+      {% csrf_token %}
+      <input class="btn btn-danger mt-2" type="submit" value="{% translate 'Yes, delete my stats' %}">
+    </form>
+  </div>
+{% endblock %}
+
