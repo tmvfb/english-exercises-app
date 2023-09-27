@@ -72,7 +72,7 @@
               {% endif %}
 
             <!-- show correct answers after post request -->
-              {% if correct_answer %}
+              {% if form.user_answer.value %}
                 <div class="p-2 col-auto mt-3">
                   {% translate "Your answers:" %} {{ form.user_answer.value }}
                 </div>

@@ -178,7 +178,7 @@ class ExerciseShowView(LoginRequiredMixin, TemplateView):
             return redirect("exercise_create")
 
         if params.current_count == params.count:
-            return self.calculate_user_score(request, params)
+            self.calculate_user_score(request, params)
 
         if request.GET.get("next") == "true":
             params.current_count += 1
@@ -201,7 +201,6 @@ class ExerciseShowView(LoginRequiredMixin, TemplateView):
         data["count"] = params.count
         data["current_count"] = params.current_count
         audio = self.upload_audio(filepath, data)
-        print(audio)
         form = self.populate_exercise_form(data)
 
         return render(
@@ -223,12 +222,9 @@ class ExerciseShowView(LoginRequiredMixin, TemplateView):
             form.save(user=request.user)
 
             if user_answer == correct_answer:
-                hide_correct = (
-                    True if form.cleaned_data["exercise_type"] != "blanks" else False
-                )
+                correct_answer = None
                 messages.success(request, _("Correct!"))
             else:
-                hide_correct = False
                 messages.error(request, _("Sorry, your answer is incorrect"))
 
             return render(
@@ -237,14 +233,12 @@ class ExerciseShowView(LoginRequiredMixin, TemplateView):
                 {
                     "form": form,
                     "button_status": "disabled",
-                    "correct_answer": None if hide_correct else correct_answer,
+                    "correct_answer": correct_answer,
                 },
             )
 
-        else:
-            print(form.errors)
-            messages.error(request, _("Please provide a valid answer."))
-            return render(request, "exercises/show.html", {"form": form})
+        messages.error(request, _("Please provide a valid answer."))
+        return render(request, "exercises/show.html", {"form": form})
 
 
 class ExerciseStatsView(LoginRequiredMixin, TemplateView):
