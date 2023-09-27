@@ -54,7 +54,7 @@ class FileForm(forms.ModelForm):
         return instance
 
 
-class FilterForm(forms.ModelForm):
+class MemoryForm(forms.ModelForm):
     """
     Sets current parameters for exercise generation and stores them in
     Memory model. 1 entry per user.
@@ -122,7 +122,7 @@ class FilterForm(forms.ModelForm):
     add_audio = forms.BooleanField(
         required=False,
         initial=False,
-        label=_("Enable audio"),
+        label=_("Enable audio (slows down generation)"),
         widget=forms.CheckboxInput(attrs={"class": "form-check-input"}),
     )
 
@@ -163,10 +163,6 @@ class TypeInExercise(forms.ModelForm):
     )
     count = forms.IntegerField(widget=forms.HiddenInput())
     current_count = forms.IntegerField(widget=forms.HiddenInput())
-    audio = forms.CharField(
-        max_length=1000000000,
-        widget=forms.HiddenInput(),
-    )
 
     class Meta:
         model = Exercise

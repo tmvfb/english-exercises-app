@@ -21,58 +21,71 @@ BASE_DIR = Path(__file__).resolve().parent
 load_dotenv()
 load_dotenv(os.path.join(BASE_DIR, ".env"))
 
-API_TOKEN = os.getenv('HUGGINGFACE_API_TOKEN')
-API_URL = (
-    "https://api-inference.huggingface.co/models/facebook/fastspeech2-en-ljspeech"
-)
+API_TOKEN = os.getenv("HUGGINGFACE_API_TOKEN")
+API_URL = "https://api-inference.huggingface.co/models/facebook/fastspeech2-en-ljspeech"
+
+# key names should be compatible with MemoryForm from exercises module
+EXERCISES = {
+    "type_in": type_in_exercise,
+    "multiple_choice": multiple_choice_exercise,
+    "word_order": word_order_exercise,
+    "blanks": blanks_exercise,
+}
 
 
-def load_data(filepath: str, username: str) -> List[str]:
+def get_filepath(filepath: str, username: str, extension: str = ".json"):
+    path, _ = os.path.split(filepath)
+    path = path + "/" + username + extension
+    return path
+
+
+def load_data(text_path: str, username: str) -> List[str]:
     """
-    Parsed data is stored in a json file under "path" filepath.
+    Parsed data is stored in a json file under "json_path" filepath.
     It is assigned a {username}.json name for uniqueness.
-    Every user has 2 associated files: original and jsonified.
+    Every user has up to 3 associated files: original text, jsonified text, audio.
+
     Function loads associated user json or creates new json from an uploaded txt.
     Case when no file is uploaded is handled by django backend.
     """
 
-    path, _ = os.path.split(filepath)
-    path = path + "/" + username + ".json"
+    json_path = get_filepath(text_path, username)
 
     try:
-        with open(path, "r") as file:
+        with open(json_path, "r") as file:
             sentences = json.load(file)
     except FileNotFoundError:
-        with open(filepath, "r") as file:
+        with open(text_path, "r") as file:  # read initial text file
             text = file.read()
 
         splitter = SentenceSplitter(language="en")
         sentences = splitter.split(text)
-        with open(path, "w") as f:
+        with open(json_path, "w") as f:
             f.write(json.dumps(sentences))
 
     return sentences
 
 
-def remove_data(filepath: str, username: str, **kwargs):
-    path, _ = os.path.split(filepath)
-    path = path + "/" + username + ".json"
-    if os.path.exists(path):
-        os.remove(path)
+def remove_data(text_path: str, username: str):
+    """
+    Removes json file associated with text file.
+    Text file deletion is handled by Django.
+    """
+
+    json_path = get_filepath(text_path, username)
+    if os.path.exists(json_path):
+        os.remove(json_path)
 
 
-def load_audio_and_get_path(filepath: str, username: str, text: str):
-    path, _ = os.path.split(filepath)
-    path = path + "/" + username + ".wav"
-    if os.path.exists(path):
-        os.remove(path)
+def load_audio(text_path: str, username: str, text_for_audio: str):
+    audio_path = get_filepath(text_path, username, extension=".wav")
+    if os.path.exists(audio_path):
+        os.remove(audio_path)
 
     headers = {"Authorization": f"Bearer {API_TOKEN}"}
-    response = requests.post(API_URL, headers=headers, json={"inputs": text})
-    with open(path, mode='bx') as f:
+    response = requests.post(API_URL, headers=headers, json={"inputs": text_for_audio})
+    with open(audio_path, mode="bx") as f:
         f.write(response.content)
-
-    return path
 
 
 def prepare_exercises(filepath: str, **kwargs) -> dict:
@@ -84,36 +97,22 @@ def prepare_exercises(filepath: str, **kwargs) -> dict:
     e_type = kwargs.get("exercise_type")
     pos = kwargs.get("pos")
     length = kwargs.get("length")
-    skip_length = kwargs.get("skip_length", 3)
+    skip_length = kwargs.get("skip_length", 1)
     if len(sentences) < length:
         raise Exception("Provided text is too short.")
 
     if e_type == "all_choices":
-        e_type = random.choice(["type_in", "multiple_choice", "word_order", "blanks"])
+        e_type = random.choice(list(EXERCISES.keys()))
         kwargs["exercise_type"] = e_type
 
-    if e_type == "type_in":
-        correct_answer, begin, end = type_in_exercise(sentences, pos, length)
-        options = None
-    elif e_type == "multiple_choice":
-        correct_answer, begin, end, options = multiple_choice_exercise(
-            sentences, pos, length
-        )
-    elif e_type == "word_order":
-        correct_answer, begin, end, options = word_order_exercise(
-            sentences, pos, length, skip_length
-        )
-    elif e_type == "blanks":
-        correct_answer, begin, end, options = blanks_exercise(
-            sentences, pos, length, skip_length
-        )
+    correct_answer, begin, end, options = EXERCISES[e_type](
+        sentences, pos, length, skip_length
+    )
 
     kwargs["correct_answer"] = correct_answer
-    kwargs["options"] = options
     kwargs["begin"] = begin
     kwargs["end"] = end
-    if kwargs.get("add_audio"):
-        kwargs["audio"] = begin + correct_answer + end
+    kwargs["options"] = options
 
     return kwargs
 

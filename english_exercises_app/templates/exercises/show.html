@@ -12,10 +12,6 @@
         <h2>{% translate 'Exercise' %} # {{ form.current_count.value }} / {{ form.count.value }}</h2>
       </div>
 
-      <audio controls>
-        <source src="{{ audio.file.url }}" type="audio/wav">
-          Your browser does not support the audio element.
-      </audio>
 
       <div class="card-body bg-light">
         <form action="{% url 'exercise_show' %}" method="post" class="needs-validation" novalidate>
@@ -102,6 +98,14 @@
 
           </div>
         </form>
+
+      {% if audio %}
+        <p>Listen to audio:</p>
+        <audio controls>
+          <source src="{{ audio.file.url }}" type="audio/wav">
+            Your browser does not support the audio element.
+        </audio>
+      {% endif %}
 
       </div>
     </div>

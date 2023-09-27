@@ -1,4 +1,5 @@
-import base64
+from typing import Union
+
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http.request import QueryDict
@@ -8,19 +9,16 @@ from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 from django.views.generic.base import TemplateView
 
-from django.core.files import File as DjangoFile
-from .models import AudioFile
-
-from text_processing.prepare_data import prepare_exercises, load_audio_and_get_path
+from text_processing.prepare_data import load_audio, prepare_exercises
 
 from .forms import (
     BlanksExercise,
     FileForm,
-    FilterForm,
+    MemoryForm,
     MultipleChoiceExercise,
     TypeInExercise,
 )
-from .models import Exercise, File, Memory
+from .models import AudioFile, Exercise, File, Memory
 
 
 @register.filter(name="split")
@@ -62,11 +60,11 @@ class ExerciseCreateView(LoginRequiredMixin, TemplateView):
     login_url = reverse_lazy("user_login")
 
     def get(self, request):
-        form = FilterForm()
+        form = MemoryForm()
         return render(request, "exercises/create.html", {"form": form})
 
     def post(self, request):
-        form = FilterForm(request.POST)  # adds entry to Memory model
+        form = MemoryForm(request.POST)  # adds entry to Memory model
 
         if form.is_valid():
             form.save(user=request.user)
@@ -85,20 +83,28 @@ class ExerciseShowView(LoginRequiredMixin, TemplateView):
 
     login_url = reverse_lazy("user_login")
 
-    def upload_audio(self, files_path, text):
-        audio = AudioFile.objects.filter(user=self.request.user).first()
+    def upload_audio(self, files_path: str, data: dict) -> Union[None, AudioFile]:
+        # generate audio only if requested. don't generate audio for blanks ex.
+        if not data.get("add_audio") or data.get("exercise_type") == "blanks":
+            return
+
+        current_user = self.request.user
+        audio_file_name = current_user.username
+        text_for_audio = data["begin"] + data["correct_answer"] + data["end"]
+
+        audio = AudioFile.objects.filter(user=current_user).first()
         if audio is not None:
             audio.delete()
-        file_path = load_audio_and_get_path(
-            files_path, self.request.user.username, text
-        )
 
+        # load text to .wav file
+        load_audio(files_path, audio_file_name, text_for_audio)
+
+        # add .wav file to Django FileForm
         audio = AudioFile()
-
-        audio.file.name = f"{self.request.user}.wav"
-        audio.user = self.request.user
+        audio.file.name = f"{audio_file_name}.wav"
+        audio.user = current_user
         audio.save()
-        print(AudioFile.objects.filter(user=self.request.user).first())
+        return AudioFile.objects.filter(user=current_user).first()
 
     def calculate_user_score(self, request, params):
         subquery = Exercise.objects.filter(user=request.user).order_by("-pk")[
@@ -117,7 +123,7 @@ class ExerciseShowView(LoginRequiredMixin, TemplateView):
         )
         return redirect("exercise_create")
 
-    def populate_exercise_form(self, data: QueryDict or dict) -> dict:
+    def populate_exercise_form(self, data: Union[QueryDict, dict]) -> dict:
         """
         Function populates form data for all exercise types.
         """
@@ -188,20 +194,18 @@ class ExerciseShowView(LoginRequiredMixin, TemplateView):
             messages.warning(request, _("Please upload a file"))
             return redirect("exercise_upload")
 
-        if data.get("audio"):
-            self.upload_audio(filepath, data.get("audio"))
-
         # populate form fields
         data["count"] = params.count
         data["current_count"] = params.current_count
+        audio = self.upload_audio(filepath, data)
         form = self.populate_exercise_form(data)
 
         return render(
             request,
             "exercises/show.html",
             {
+                "audio": audio,
                 "form": form,
-                "audio": AudioFile.objects.filter(user=request.user).first(),
             },
         )
 
@@ -234,6 +238,7 @@ class ExerciseShowView(LoginRequiredMixin, TemplateView):
             )
 
         else:
+            print(form.errors)
             messages.error(request, _("Please provide a valid answer."))
             return render(request, "exercises/show.html", {"form": form})
 

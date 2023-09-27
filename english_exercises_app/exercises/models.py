@@ -4,35 +4,33 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 
-class File(models.Model):
+class BaseFileModel(models.Model):
     """
+    Base model for user files.
     Restricts user to have only one file uploaded.
-    Stores information about the current file.
     """
 
-    file = models.FileField(
-        upload_to="",
-    )
-    user = models.OneToOneField(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE
-    )
+    file = models.FileField(upload_to="")
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+
+    class Meta:
+        abstract = True
+
+
+class File(BaseFileModel):
+    """
+    Stores information about the current text file.
+    """
 
     class Meta:
         verbose_name = _("File")
         verbose_name_plural = _("Files")
 
 
-class AudioFile(models.Model):
+class AudioFile(BaseFileModel):
     """
-    A class to store audio.
+    A class to store audio files.
     """
-
-    file = models.FileField(
-        upload_to="",
-    )
-    user = models.OneToOneField(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE
-    )
 
     class Meta:
         verbose_name = _("Audio file")

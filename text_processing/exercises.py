@@ -121,13 +121,16 @@ def type_in_exercise(
     else:
         return type_in_exercise(sentences, pos, length, skip_length, multiple_skips)
 
-    return (correct_answer, begin, end)
+    options = None  # preserved for interface compatibility
+    return (correct_answer, begin, end, options)
 
 
 def multiple_choice_exercise(
-    sentences: List[str], pos: List[str], length: int
+    sentences: List[str], pos: List[str], length: int, skip_length: int = 1
 ) -> Tuple[str, str, str, List[str]]:
-    correct_answer, begin, end = type_in_exercise(sentences, pos, length)
+    correct_answer, begin, end, options = type_in_exercise(
+        sentences, pos, length, skip_length=1
+    )
 
     synonyms = replace_word_with_synonyms(correct_answer)
     if not synonyms:
@@ -159,7 +162,9 @@ def multiple_choice_exercise(
 def word_order_exercise(
     sentences: List[str], pos: List[str], length: int, skip_length: int
 ) -> Tuple[str, str, str, List[str]]:
-    correct_answer, begin, end = type_in_exercise(sentences, pos, length, skip_length)
+    correct_answer, begin, end, options = type_in_exercise(
+        sentences, pos, length, skip_length
+    )
     answer = nlp(correct_answer)
     split = [token for token in answer]
 
@@ -220,7 +225,7 @@ def blanks_exercise(
 ) -> Tuple[str, str, str, List[str]]:
     # getting a sequence of sentences with correct length
     # performing all necessary length checks
-    correct_answer, begin, end = type_in_exercise(
+    correct_answer, begin, end, options = type_in_exercise(
         sentences, pos, length, skip_length, multiple_skips=True
     )
     split_correct_answer = correct_answer.split(", ")

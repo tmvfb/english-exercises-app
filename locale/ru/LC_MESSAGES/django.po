@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-09-26 16:36+0300\n"
+"POT-Creation-Date: 2023-09-27 15:30+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,7 +21,7 @@ msgstr ""
 "(n%100>=11 && n%100<=14)? 2 : 3);\n"
 
 #: english_exercises_app/exercises/forms.py:16
-#: english_exercises_app/exercises/models.py:21
+#: english_exercises_app/exercises/models.py:26
 msgid "File"
 msgstr "Файл"
 
@@ -38,7 +38,7 @@ msgid "Parts of speech"
 msgstr "Части речи"
 
 #: english_exercises_app/exercises/forms.py:80
-#: english_exercises_app/exercises/forms.py:97
+#: english_exercises_app/exercises/forms.py:96
 msgid "All"
 msgstr "Все"
 
@@ -58,61 +58,73 @@ msgstr "Прилагательные"
 msgid "Articles"
 msgstr "Артикли"
 
-#: english_exercises_app/exercises/forms.py:95
+#: english_exercises_app/exercises/forms.py:94
 msgid "Exercise type"
 msgstr "Тип упражнения"
 
-#: english_exercises_app/exercises/forms.py:98
+#: english_exercises_app/exercises/forms.py:97
 msgid "Type in"
 msgstr "Ввод слова"
 
-#: english_exercises_app/exercises/forms.py:99
+#: english_exercises_app/exercises/forms.py:98
 msgid "Multiple choice"
 msgstr "Выбор слова"
 
-#: english_exercises_app/exercises/forms.py:100
+#: english_exercises_app/exercises/forms.py:99
 msgid "Complete sentence"
 msgstr "Дополнить предложение"
 
-#: english_exercises_app/exercises/forms.py:101
+#: english_exercises_app/exercises/forms.py:100
 msgid "Drag blanks"
 msgstr "Перетащить слова"
 
-#: english_exercises_app/exercises/forms.py:113
+#: english_exercises_app/exercises/forms.py:112
 msgid "Context length"
 msgstr "Длина контекста"
 
-#: english_exercises_app/exercises/forms.py:120
+#: english_exercises_app/exercises/forms.py:119
 msgid "Skipped words (complete sentence exercises only)"
 msgstr "Количество пропущенных слов (для некоторых упражнений)"
 
-#: english_exercises_app/exercises/models.py:22
+#: english_exercises_app/exercises/forms.py:125
+msgid "Enable audio (slows down generation)"
+msgstr "Аудирование (замедляет создание упражнений)"
+
+#: english_exercises_app/exercises/models.py:27
 msgid "Files"
 msgstr "Файлы"
 
-#: english_exercises_app/exercises/models.py:54
-#: english_exercises_app/templates/exercises/show.html:11
+#: english_exercises_app/exercises/models.py:36
+msgid "Audio file"
+msgstr "Аудиофайл"
+
+#: english_exercises_app/exercises/models.py:37
+msgid "Audio files"
+msgstr "Аудиофайлы"
+
+#: english_exercises_app/exercises/models.py:69
+#: english_exercises_app/templates/exercises/show.html:12
 msgid "Exercise"
 msgstr "Упражнение"
 
-#: english_exercises_app/exercises/models.py:55
+#: english_exercises_app/exercises/models.py:70
 #: english_exercises_app/templates/exercises/create.html:15
 msgid "Exercises"
 msgstr "Упражнения"
 
-#: english_exercises_app/exercises/views.py:42
+#: english_exercises_app/exercises/views.py:45
 msgid "File uploaded successfully!"
 msgstr "Файл успешно загружен!"
 
-#: english_exercises_app/exercises/views.py:47
+#: english_exercises_app/exercises/views.py:50
 msgid "Something went wrong. Please check file format"
 msgstr "Что-то пошло не так. Пожалуйста, проверьте формат файла"
 
-#: english_exercises_app/exercises/views.py:71
+#: english_exercises_app/exercises/views.py:74
 msgid "Please select valid parameters"
 msgstr "Пожалуйста, укажите допустимые параметры"
 
-#: english_exercises_app/exercises/views.py:95
+#: english_exercises_app/exercises/views.py:121
 #, python-brace-format
 msgid ""
 "You have completed all the exercises! Your score: {score} / {params.count}"
@@ -120,48 +132,48 @@ msgstr ""
 "Отличная работа, вы выполнили все упражнения! Ваш результат: {score} / "
 "{params.count}"
 
-#: english_exercises_app/exercises/views.py:116
+#: english_exercises_app/exercises/views.py:142
 msgid "Type your answer"
 msgstr "Ваши ответы:"
 
-#: english_exercises_app/exercises/views.py:117
-#: english_exercises_app/exercises/views.py:118
+#: english_exercises_app/exercises/views.py:143
+#: english_exercises_app/exercises/views.py:144
 msgid "Select correct answer"
 msgstr "Правильные ответы:"
 
-#: english_exercises_app/exercises/views.py:119
+#: english_exercises_app/exercises/views.py:145
 msgid "Drag and drop correct answers"
 msgstr "Правильные ответы:"
 
-#: english_exercises_app/exercises/views.py:145
+#: english_exercises_app/exercises/views.py:171
 msgid "Please upload a file."
 msgstr "Пожалуйста, загрузите файл"
 
-#: english_exercises_app/exercises/views.py:148
+#: english_exercises_app/exercises/views.py:174
 msgid "Please specify exercise parameters."
 msgstr "Пожалуйста, укажите допустимые параметры"
 
-#: english_exercises_app/exercises/views.py:168
+#: english_exercises_app/exercises/views.py:194
 msgid "Please upload a file"
 msgstr "Пожалуйста, загрузите файл"
 
-#: english_exercises_app/exercises/views.py:191
+#: english_exercises_app/exercises/views.py:225
 msgid "Correct!"
 msgstr "Правильно!"
 
-#: english_exercises_app/exercises/views.py:194
+#: english_exercises_app/exercises/views.py:228
 msgid "Sorry, your answer is incorrect"
 msgstr "К сожалению, вы где-то ошиблись"
 
-#: english_exercises_app/exercises/views.py:207
+#: english_exercises_app/exercises/views.py:242
 msgid "Please provide a valid answer."
 msgstr "Пожалуйста, укажите допустимый ответ"
 
-#: english_exercises_app/exercises/views.py:224
+#: english_exercises_app/exercises/views.py:259
 msgid "No exercises have been completed yet, stats are not available."
 msgstr "Пока вы не выполнили ни одного упражнения, статистика недоступна"
 
-#: english_exercises_app/exercises/views.py:256
+#: english_exercises_app/exercises/views.py:297
 msgid "Stats deleted successfully!"
 msgstr "Пользователь успешно зарегистрирован"
 
@@ -237,24 +249,24 @@ msgstr "Пожалуйста, зарегистрируйтесь и загруз
 msgid "Generate"
 msgstr "Сгенерировать"
 
-#: english_exercises_app/templates/exercises/show.html:75
+#: english_exercises_app/templates/exercises/show.html:77
 msgid "Your answers:"
 msgstr "Ваши ответы:"
 
-#: english_exercises_app/templates/exercises/show.html:77
+#: english_exercises_app/templates/exercises/show.html:79
 #: english_exercises_app/templates/exercises/stats.html:22
 msgid "Correct answers:"
 msgstr "Правильные ответы:"
 
-#: english_exercises_app/templates/exercises/show.html:90
+#: english_exercises_app/templates/exercises/show.html:92
 msgid "Next"
 msgstr "Вперёд"
 
-#: english_exercises_app/templates/exercises/show.html:92
+#: english_exercises_app/templates/exercises/show.html:94
 msgid "Skip"
 msgstr "Пропустить"
 
-#: english_exercises_app/templates/exercises/show.html:94
+#: english_exercises_app/templates/exercises/show.html:96
 msgid "Check"
 msgstr "Проверить"
 
@@ -306,7 +318,8 @@ msgstr "Вы уверены, что хотите удалить свой про�
 
 #: english_exercises_app/templates/users/delete.html:9
 msgid "This action cannot be undone, and your stats will be lost."
-msgstr "Это действие невозможно отменить, ваша статистика также будет потеряна."
+msgstr ""
+"Это действие невозможно отменить, ваша статистика также будет потеряна."
 
 #: english_exercises_app/templates/users/delete.html:12
 msgid "Yes, delete my profile"
