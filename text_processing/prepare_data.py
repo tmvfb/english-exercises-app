@@ -77,15 +77,19 @@ def remove_data(text_path: str, username: str):
         os.remove(json_path)
 
 
-def load_audio(text_path: str, username: str, text_for_audio: str):
+def load_audio(text_path: str, username: str, text_for_audio: str) -> bool:
     audio_path = get_filepath(text_path, username, extension=".wav")
     if os.path.exists(audio_path):
         os.remove(audio_path)
+    if not API_TOKEN:
+        return False
 
     headers = {"Authorization": f"Bearer {API_TOKEN}"}
     response = requests.post(API_URL, headers=headers, json={"inputs": text_for_audio})
     with open(audio_path, mode="bx") as f:
         f.write(response.content)
+
+    return True
 
 
 def prepare_exercises(filepath: str, **kwargs) -> dict:

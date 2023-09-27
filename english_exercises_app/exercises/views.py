@@ -97,7 +97,10 @@ class ExerciseShowView(LoginRequiredMixin, TemplateView):
             audio.delete()
 
         # load text to .wav file
-        load_audio(files_path, audio_file_name, text_for_audio)
+        # return True if an actual API key for huggingface was provided
+        is_loaded = load_audio(files_path, audio_file_name, text_for_audio)
+        if not is_loaded:
+            return
 
         # add .wav file to Django FileForm
         audio = AudioFile()
@@ -198,6 +201,7 @@ class ExerciseShowView(LoginRequiredMixin, TemplateView):
         data["count"] = params.count
         data["current_count"] = params.current_count
         audio = self.upload_audio(filepath, data)
+        print(audio)
         form = self.populate_exercise_form(data)
 
         return render(
