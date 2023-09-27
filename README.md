@@ -53,17 +53,23 @@ docker compose build
 docker compose run web python3 manage.py migrate
 docker compose up
 ```
-To use custom PostgreSQL database and django secret key, you can also create a .env file and specify the environment variables below before running the first command.  
+To use custom PostgreSQL database, django secret key, and API for audio generation, you can also create a .env file and specify the environment variables below before running the first command.  
 
 ## Environment variables
 Add following variables to the .env file:
 ```
 SECRET_KEY=
 DATABASE_URL=  # PostgreSQL database URL in the format postgres://{user}:{password}@{hostname}:{port}/{database-name}
+HUGGINGFACE_API_TOKEN=  # api token from huggingface.co. Audio generation works only if a token was provided
 ```
 
 ## Todo list
-1. Full CRUD for users
-2. New exercise types and adding more variability to old ones 
-3. Better design for drag and drop exercises 
-4. Consider TDD for further development
+* [x] Full CRUD for users (partially implemented)  
+* [x] New exercise types and adding more variability to old ones (added audio playback)  
+* [ ] Better design for drag and drop exercises (wontfix, JS is not fun)  
+* [ ] Consider TDD for further development  
+
+## Notes on design flaws
+* Drag and drop exercises currently handle only the perfect use case (e. g. without re-dragging or choosing another word).
+* Adding new features (e.g. new exercise types) could have been made simpler, but I wanted the Django and text processing modules to be as independent as possible.
+* Django may be not the best idea for implementation of such project. There is too much frontend, so something like streamlit would suit better. I chose Django because I wanted to improve my skills in something I had already learned, and also wanted to have stats for users.
