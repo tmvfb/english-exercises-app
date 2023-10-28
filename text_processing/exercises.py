@@ -51,19 +51,18 @@ def pick_long_sentence(sentences: List[str], length: int) -> str:
     """
 
     count = 0
-    while True:
+    while count < 100:
+        count += 1
         rng_sentence = random.randint(0, len(sentences) - length)
+
         if length == 1:
             sentence = sentences[rng_sentence]
         else:
             sentence = " ".join(sentences[rng_sentence : rng_sentence + length])
         if len(sentence.split(" ")) > 3:
-            break
-        count += 1
-        if count == 100:
-            raise Exception("Provided text seems to have only short sentences.")
+            return sentence
 
-    return sentence
+    raise Exception("Provided text seems to have only short sentences.")
 
 
 def type_in_exercise(
