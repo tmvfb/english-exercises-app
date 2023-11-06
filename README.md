@@ -4,8 +4,10 @@
 [![Github Actions Status](https://github.com/tmvfb/english-exercises-app/workflows/Python%20CI/badge.svg)](https://github.com/tmvfb/english-exercises-app/actions)
 [![Maintainability](https://api.codeclimate.com/v1/badges/620bb3a35893a3f0e87e/maintainability)](https://codeclimate.com/github/tmvfb/english-exercises-app/maintainability)
 
+Combining my backend and <s>scarce</s> frontend skills with some deep learning-powered text processing :)
+
 ## Description
-Web app that generates English practice exercises from an uploaded text. Requires authentication and a *.txt* file in English to start.
+This repository contains code and deploy instructions for a web app that generates English practice exercises from an uploaded text. App requires authentication and a *.txt* file in English to start.   
   
 Module **english_exercises_app** is written in [django](https://github.com/django/django) and accounts for web backend. Module **text_processing** is responsible for data processing and exercise generation using [*gensim*](https://github.com/RaRe-Technologies/gensim) and [*spaCy*](https://github.com/explosion/spaCy) libraries. Web app includes authentication system to remember user and exercise generation parameters, as well as to store user stats. App is deployed using [Railway](https://railway.app/).
   
@@ -23,7 +25,7 @@ Local deploy is possible using either Linux/WSL or Docker.
 * pip >=22.0
 * poetry >=1.4.0
 * GNU make
-* Configured PostgreSQL database (app won't work with other database types due to use of Django ArrayField)
+* Configured PostgreSQL database (app won't work with other database types due to the use of Django ArrayField)
   
 **Docker:**  
 * Latest releases of Docker and Docker Compose
@@ -53,7 +55,7 @@ docker compose build
 docker compose run web python3 manage.py migrate
 docker compose up
 ```
-To use custom PostgreSQL database, django secret key, and API for audio generation, you can also create a .env file and specify the environment variables below before running the first command.  
+To use a custom PostgreSQL database, django secret key, and API for audio generation, you can also create a .env file and specify the environment variables below before running the first command.  
 
 ## Environment variables
 Add following variables to the .env file:
