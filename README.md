@@ -2,9 +2,10 @@
 
 [![Website https://english-exercises-app-production.up.railway.app/](https://img.shields.io/website-up-down-green-red/https/english-exercises-app-production.up.railway.app.svg)](https://english-exercises-app-production.up.railway.app/)
 [![Github Actions Status](https://github.com/tmvfb/english-exercises-app/workflows/Python%20CI/badge.svg)](https://github.com/tmvfb/english-exercises-app/actions)
-[![Maintainability](https://api.codeclimate.com/v1/badges/620bb3a35893a3f0e87e/maintainability)](https://codeclimate.com/github/tmvfb/english-exercises-app/maintainability)
+[![Maintainability](https://api.codeclimate.com/v1/badges/620bb3a35893a3f0e87e/maintainability)](https://codeclimate.com/github/tmvfb/english-exercises-app/maintainability)  
 
-Combining my backend and <s>scarce</s> frontend skills with some deep learning-powered text processing :)
+Combining my backend and <s>scarce</s> frontend skills with some deep learning-powered text processing :)  
+Find current deployed GitHub version by clicking the "website" icon above.
 
 ## Description
 This repository contains code and deploy instructions for a web app that generates English practice exercises from an uploaded text. App requires authentication and a *.txt* file in English to start.   
