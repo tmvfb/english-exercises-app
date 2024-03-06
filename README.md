@@ -51,12 +51,13 @@ $ make dev
 Run `deactivate` to exit virtual environment.
   
 **Docker:**  
+To run in dev mode, create a .env file with 1 variable: `DEBUG=True`. Then run:
 ```
 docker compose build
 docker compose run web python3 manage.py migrate
 docker compose up
 ```
-To use a custom PostgreSQL database, django secret key, and API for audio generation, you can also create a .env file and specify the environment variables below before running the first command.  
+To use a custom PostgreSQL database, django secret key, and API for audio generation, you can also specify the environment variables below in the .env file.
 
 ## Environment variables
 Add following variables to the .env file:

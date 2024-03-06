@@ -33,7 +33,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'english_exercises_app.settings'
 SECRET_KEY = os.getenv('SECRET_KEY', '6353juantabo')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = bool(os.getenv('DEBUG'))
+DEBUG = True
 print(DEBUG, type(DEBUG))
 
 ALLOWED_HOSTS = [
