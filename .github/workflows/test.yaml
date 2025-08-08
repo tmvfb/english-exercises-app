@@ -1,0 +1,38 @@
+name: OK to Test
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feature/tests
+  issue_comment:
+    types: [created]
+
+jobs:
+  test:
+    if: |
+      github.event.issue.pull_request != null &&
+      startsWith(github.event.comment.body, '/ok-to-test')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get PR info
+        id: get-pr
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.TOKEN }}
+          script: |
+            const pr = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.issue.number
+            });
+            core.setOutput('branch', pr.data.head.ref);
+
+      - name: Echo branch name
+        env:
+          BRANCH_NAME: ${{ steps.get-pr.outputs.branch }}
+          ALTERNATIVE_BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+        run: |
+          echo "Branch name is: $BRANCH_NAME"
+          echo "Branch name is: $ALTERNATIVE_BRANCH_NAME"
